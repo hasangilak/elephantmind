@@ -4,7 +4,7 @@ import Animated from 'react-native-reanimated';
 
 import { ArrowRight, Check, Clock, Close } from '@/components/Icon';
 import { PageHeader, Screen } from '@/components/layout';
-import { Card, enterUp, Pill, ProgressBar, T } from '@/components/ui';
+import { Card, Pill, ProgressBar, T, useEntering } from '@/components/ui';
 import { pegByN } from '@/data/majorSystem';
 import { dueIds, SR_LABELS, stageCounts } from '@/engine/sr';
 import * as haptics from '@/lib/haptics';
@@ -222,13 +222,14 @@ function ActiveCard({
 }) {
   const peg = pegByN(n);
   const pct = qlen ? Math.round((pos / qlen) * 100) : 0;
+  const entering = useEntering();
   return (
     <View>
       <ProgressBar pct={pct} height={6} style={{ marginBottom: 6 }} />
       <T mono s={11} c={colors.ink3} style={{ textAlign: 'right', marginBottom: 16 }}>
         {pos} / {qlen}
       </T>
-      <Animated.View key={n} entering={enterUp}>
+      <Animated.View key={n} entering={entering}>
         <Card style={{ borderRadius: 24, padding: 30, alignItems: 'center' }}>
           <T s={12} w={600} ls={1} c={colors.ink3}>
             WHAT'S THE IMAGE FOR
@@ -237,7 +238,7 @@ function ActiveCard({
             {n}
           </T>
           {reveal && peg && (
-            <Animated.View entering={enterUp} style={{ borderTopWidth: 1, borderTopColor: colors.line, marginTop: 14, paddingTop: 18, alignItems: 'center', alignSelf: 'stretch' }}>
+            <Animated.View entering={entering} style={{ borderTopWidth: 1, borderTopColor: colors.line, marginTop: 14, paddingTop: 18, alignItems: 'center', alignSelf: 'stretch' }}>
               <T s={32} w={800} ls={-0.5} c={colors.accentDeep}>
                 {peg.word}
               </T>
@@ -280,8 +281,9 @@ function ActiveCard({
 }
 
 function Done({ reviewed, got, onReset }: { reviewed: number; got: number; onReset: () => void }) {
+  const entering = useEntering();
   return (
-    <Animated.View entering={enterUp} style={{ alignItems: 'center', paddingVertical: 30, paddingHorizontal: 10 }}>
+    <Animated.View entering={entering} style={{ alignItems: 'center', paddingVertical: 30, paddingHorizontal: 10 }}>
       <View style={{ width: 68, height: 68, borderRadius: 22, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
         <Check size={34} color={colors.accentDeep} strokeWidth={2.6} />
       </View>

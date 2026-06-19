@@ -1,7 +1,7 @@
 /**
  * Shared UI primitives styled to the Mnemos design.
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -21,6 +21,7 @@ import Animated, {
 import Svg, { Circle } from 'react-native-svg';
 
 import { ChevronLeft, Close } from '@/components/Icon';
+import { useProgress } from '@/state/store';
 import { useUI } from '@/state/ui';
 import { colors, fonts, radii } from '@/theme/tokens';
 
@@ -227,6 +228,44 @@ export function ToastHost() {
 
 /** Standard fade-in-up entering animation matching the design's mnUp/mnPop. */
 export const enterUp = FadeInDown.duration(360);
+
+/**
+ * Returns the entrance animation, or undefined when the user has enabled
+ * "reduce motion". Optionally delayed (ms).
+ */
+export function useEntering(delayMs?: number) {
+  const reduce = useProgress((s) => s.settings.reduceMotion);
+  if (reduce) return undefined;
+  return delayMs ? FadeInDown.duration(360).delay(delayMs) : enterUp;
+}
+
+export interface CountUpProps extends TProps {
+  value: number;
+  duration?: number;
+}
+
+/** Animated number that counts up to `value` (instant when reduce-motion is on). */
+export function CountUp({ value, duration = 700, ...textProps }: CountUpProps) {
+  const reduce = useProgress((s) => s.settings.reduceMotion);
+  const [display, setDisplay] = useState(value);
+  useEffect(() => {
+    if (reduce) {
+      setDisplay(value);
+      return;
+    }
+    let raf = 0;
+    const start = Date.now();
+    const tick = () => {
+      const t = Math.min(1, (Date.now() - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplay(Math.round(value * eased));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, duration, reduce]);
+  return <T {...textProps}>{display}</T>;
+}
 
 const styles = StyleSheet.create({
   appBar: {

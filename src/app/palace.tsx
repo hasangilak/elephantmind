@@ -5,7 +5,7 @@ import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ArrowRight, Padlock } from '@/components/Icon';
-import { AppBar, Card, enterUp, ProgressBar, SquareButton, T } from '@/components/ui';
+import { AppBar, Card, CountUp, ProgressBar, SquareButton, T, useEntering } from '@/components/ui';
 import { PALACE } from '@/data/content';
 import { fmtTime } from '@/engine/digits';
 import { scorePalace, wordMatches, type PalaceScore } from '@/engine/palace';
@@ -148,6 +148,7 @@ function Walk({
   const loc = loci[index];
   const word = words[index];
   const pct = Math.round(((index + 1) / loci.length) * 100);
+  const entering = useEntering();
   return (
     <View style={{ flex: 1, paddingHorizontal: 20, paddingBottom: 20 }}>
       <ProgressBar pct={pct} height={6} style={{ marginBottom: 18 }} />
@@ -166,7 +167,7 @@ function Walk({
           </T>
         </View>
       </View>
-      <Animated.View key={index} entering={enterUp} style={{ flex: 1, backgroundColor: colors.ink, borderRadius: radii.xxl, padding: 28, alignItems: 'center', justifyContent: 'center' }}>
+      <Animated.View key={index} entering={entering} style={{ flex: 1, backgroundColor: colors.ink, borderRadius: radii.xxl, padding: 28, alignItems: 'center', justifyContent: 'center' }}>
         <T s={12} w={600} ls={1} c="rgba(251,249,244,0.55)">
           PLACE THIS WORD HERE
         </T>
@@ -198,9 +199,10 @@ function Walk({
 }
 
 function RecallIntro({ elapsed, onStart }: { elapsed: number; onStart: () => void }) {
+  const entering = useEntering();
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
-      <Animated.View entering={enterUp} style={{ width: 64, height: 64, borderRadius: radii.xxl, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
+      <Animated.View entering={entering} style={{ width: 64, height: 64, borderRadius: radii.xxl, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
         <Padlock size={30} color={colors.accentDeep} />
       </Animated.View>
       <T s={24} w={800} ls={-0.5} style={{ marginBottom: 8 }}>
@@ -278,16 +280,15 @@ function ScoreView({
   onAgain: () => void;
   onExit: () => void;
 }) {
+  const entering = useEntering();
   return (
     <View style={{ flex: 1, paddingHorizontal: 20, paddingBottom: 20 }}>
-      <Animated.View entering={enterUp} style={{ alignItems: 'center', marginBottom: 14 }}>
+      <Animated.View entering={entering} style={{ alignItems: 'center', marginBottom: 14 }}>
         <T s={13} w={700} ls={1} c={colors.ink3}>
           PALACE WALKED
         </T>
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginVertical: 6 }}>
-          <T mono s={48} w={700} ls={-1} c={colors.accent} style={{ lineHeight: 50 }}>
-            {score.correct}
-          </T>
+          <CountUp value={score.correct} mono s={48} w={700} ls={-1} c={colors.accent} style={{ lineHeight: 50 }} />
           <T mono s={24} c={colors.ink3} style={{ lineHeight: 34 }}>
             /{score.total}
           </T>

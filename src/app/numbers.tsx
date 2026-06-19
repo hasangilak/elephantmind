@@ -5,7 +5,7 @@ import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ArrowDown, ArrowRight, Play, Timer } from '@/components/Icon';
-import { AppBar, Card, enterUp, SquareButton, T } from '@/components/ui';
+import { AppBar, Card, CountUp, SquareButton, T, useEntering } from '@/components/ui';
 import { LEVELS, LEVEL_ORDER, type NumbersLevel } from '@/data/content';
 import { DIGIT_MAP, pegByN } from '@/data/majorSystem';
 import { benchPlace, chunk2, fmtTime, genDigits, scoreNumbers, scorePairs, type NumbersScore } from '@/engine/digits';
@@ -157,6 +157,7 @@ function Lesson({
   onSkip: () => void;
 }) {
   const kind = LESSON_STEPS[step];
+  const entering = useEntering();
   return (
     <View style={{ flex: 1, paddingHorizontal: 20, paddingBottom: 20 }}>
       <View style={{ flexDirection: 'row', gap: 5, marginBottom: 16 }}>
@@ -164,7 +165,7 @@ function Lesson({
           <View key={i} style={{ flex: 1, height: 4, borderRadius: radii.pill, backgroundColor: i <= step ? colors.accent : colors.card2 }} />
         ))}
       </View>
-      <Animated.View key={kind} entering={enterUp} style={{ flex: 1 }}>
+      <Animated.View key={kind} entering={entering} style={{ flex: 1 }}>
         <Card style={{ flex: 1, padding: 22 }}>
           <ScrollView showsVerticalScrollIndicator={false}>
             {kind === 'map' && <LessonMap />}
@@ -554,15 +555,14 @@ function ScoreView({
   onExit: () => void;
 }) {
   const pairs = scorePairs(digits, input);
+  const entering = useEntering();
   return (
     <View style={{ flex: 1, paddingHorizontal: 20, paddingBottom: 20 }}>
-      <Animated.View entering={enterUp} style={{ alignItems: 'center', marginBottom: 14 }}>
+      <Animated.View entering={entering} style={{ alignItems: 'center', marginBottom: 14 }}>
         <T s={13} w={700} ls={1} c={colors.ink3}>
           ROUND COMPLETE
         </T>
-        <T mono s={52} w={700} ls={-1.5} c={colors.accent} style={{ lineHeight: 56, marginVertical: 6 }}>
-          {score.lead}
-        </T>
+        <CountUp value={score.lead} mono s={52} w={700} ls={-1.5} c={colors.accent} style={{ lineHeight: 56, marginVertical: 6 }} />
         <T s={13.5} c={colors.ink2}>
           digits correct in a row · of {score.total}
         </T>

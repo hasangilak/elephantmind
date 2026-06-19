@@ -5,7 +5,7 @@ import Animated from 'react-native-reanimated';
 
 import { ArrowRight, ChevronRight, Flame, Gear, Lock } from '@/components/Icon';
 import { Screen } from '@/components/layout';
-import { Card, enterUp, Pill, ProgressBar, Ring, T } from '@/components/ui';
+import { Card, Pill, ProgressBar, Ring, T, useEntering } from '@/components/ui';
 import { dueIds } from '@/engine/sr';
 import { levelForXp, rankForLevel, xpInto, xpPct, greetingFor, XP_PER_LEVEL } from '@/engine/leveling';
 import { pegsLearned, useProgress } from '@/state/store';
@@ -83,8 +83,9 @@ function ModeRow({ mode }: { mode: Mode }) {
 }
 
 function TierCard({ tier, index }: { tier: Tier; index: number }) {
+  const entering = useEntering(index * 60);
   return (
-    <Animated.View entering={enterUp.delay(index * 60)}>
+    <Animated.View entering={entering}>
       <Card style={{ overflow: 'hidden' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13, padding: 15, paddingBottom: 13 }}>
           <Ring pct={tier.pct} label={`${Math.round(tier.pct)}%`} />
