@@ -60,6 +60,20 @@ export function Timer({ size = 15, color = colors.ink }: IconProps) {
   );
 }
 
+export function Gear({ size = 20, color = colors.ink2, strokeWidth = 1.8 }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={12} cy={12} r={3} stroke={color} strokeWidth={strokeWidth} />
+      <Path
+        d="M19.4 13.5a7.6 7.6 0 000-3l1.8-1.4-2-3.4-2.1.9a7.6 7.6 0 00-2.6-1.5L14 2h-4l-.5 2.6a7.6 7.6 0 00-2.6 1.5l-2.1-.9-2 3.4L4.6 10a7.6 7.6 0 000 3l-1.8 1.4 2 3.4 2.1-.9a7.6 7.6 0 002.6 1.5L10 22h4l.5-2.6a7.6 7.6 0 002.6-1.5l2.1.9 2-3.4-1.8-1.4z"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 export function Clock({ size = 14, color = colors.ink2 }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

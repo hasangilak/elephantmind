@@ -3,7 +3,7 @@ import React from 'react';
 import { Pressable, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { ArrowRight, ChevronRight, Flame, Lock } from '@/components/Icon';
+import { ArrowRight, ChevronRight, Flame, Gear, Lock } from '@/components/Icon';
 import { Screen } from '@/components/layout';
 import { Card, enterUp, Pill, ProgressBar, Ring, T } from '@/components/ui';
 import { dueIds } from '@/engine/sr';
@@ -207,12 +207,21 @@ export default function HomeScreen() {
             Atlas
           </T>
         </View>
-        <Pill>
-          <Flame size={15} color={colors.gold} />
-          <T mono w={700} s={14}>
-            {streak}
-          </T>
-        </Pill>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Pill>
+            <Flame size={15} color={colors.gold} />
+            <T mono w={700} s={14}>
+              {streak}
+            </T>
+          </Pill>
+          <Pressable
+            onPress={() => router.push('/settings')}
+            style={{ width: 38, height: 38, borderRadius: 999, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }}
+            hitSlop={6}
+          >
+            <Gear size={18} color={colors.ink2} />
+          </Pressable>
+        </View>
       </View>
 
       {/* level / xp */}

@@ -7,6 +7,7 @@ import { PageHeader, Screen } from '@/components/layout';
 import { Card, enterUp, Pill, ProgressBar, T } from '@/components/ui';
 import { pegByN } from '@/data/majorSystem';
 import { dueIds, SR_LABELS, stageCounts } from '@/engine/sr';
+import * as haptics from '@/lib/haptics';
 import { useProgress } from '@/state/store';
 import { useUI } from '@/state/ui';
 import { colors, radii } from '@/theme/tokens';
@@ -44,6 +45,8 @@ export default function ReviewScreen() {
   };
 
   const answer = (ok: boolean) => {
+    if (ok) haptics.success();
+    else haptics.error();
     reviewSr(queue[pos], ok);
     const newGot = got + (ok ? 1 : 0);
     const newPos = pos + 1;
@@ -91,7 +94,10 @@ export default function ReviewScreen() {
           pos={pos}
           qlen={queue.length}
           reveal={reveal}
-          onReveal={() => setReveal(true)}
+          onReveal={() => {
+            haptics.tapMedium();
+            setReveal(true);
+          }}
           onAnswer={answer}
         />
       )}

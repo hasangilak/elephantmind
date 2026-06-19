@@ -15,6 +15,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ToastHost } from '@/components/ui';
+import { enableReminders } from '@/lib/notifications';
 import { useProgress } from '@/state/store';
 import { colors } from '@/theme/tokens';
 
@@ -29,11 +30,17 @@ export default function RootLayout() {
     SpaceMono_700Bold,
   });
   const hydrated = useProgress((s) => s.hydrated);
+  const reminders = useProgress((s) => s.settings.reminders);
 
   // Kick rehydration (zustand persist hydrates async from AsyncStorage).
   useEffect(() => {
     useProgress.persist.rehydrate();
   }, []);
+
+  // Keep the scheduled daily reminder in sync with the setting.
+  useEffect(() => {
+    if (hydrated && reminders) void enableReminders();
+  }, [hydrated, reminders]);
 
   if (!fontsLoaded || !hydrated) {
     return <View style={{ flex: 1, backgroundColor: colors.paper }} />;
@@ -52,6 +59,8 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="numbers" options={{ animation: 'slide_from_bottom' }} />
           <Stack.Screen name="palace" options={{ animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="images" options={{ animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="settings" options={{ animation: 'slide_from_bottom' }} />
         </Stack>
         <ToastHost />
       </SafeAreaProvider>

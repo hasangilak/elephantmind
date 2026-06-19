@@ -45,6 +45,16 @@ export interface PalaceBest {
   words: number;
   timeSec: number;
 }
+export interface ImagesBest {
+  correct: number;
+  timeSec: number;
+}
+
+export interface Settings {
+  haptics: boolean;
+  reminders: boolean;
+  reduceMotion: boolean;
+}
 
 export interface ProgressState {
   hydrated: boolean;
@@ -55,16 +65,20 @@ export interface ProgressState {
   srDay: number;
   numbersBest: NumbersBest | null;
   palaceBest: PalaceBest | null;
+  imagesBest: ImagesBest | null;
   recent: RecentSession[];
   /** Activity counts, Mon..Sun. */
   week: number[];
+  settings: Settings;
 
   // actions
   recordNumbers(score: NumbersScore, elapsedSec: number): void;
   recordPalace(score: PalaceScore, elapsedSec: number): void;
+  recordImages(correct: number, total: number, elapsedSec: number): void;
   reviewSr(n: string, gotIt: boolean): void;
   finishReview(gotCount: number): void;
   advanceSrDay(days: number): void;
+  setSetting<K extends keyof Settings>(key: K, value: Settings[K]): void;
   resetProgress(): void;
 }
 
@@ -78,6 +92,7 @@ function makeSeed() {
     srDay: 0,
     numbersBest: { digits: 40, timeSec: 52 } as NumbersBest,
     palaceBest: { words: 12, timeSec: 130 } as PalaceBest,
+    imagesBest: { correct: 18, timeSec: 100 } as ImagesBest,
     week: [3, 5, 2, 6, 4, 7, 5],
     recent: [
       { mode: 'Numbers', score: '34 / 40 digits', xp: 180, ts: now - 5 * 3600_000 },
@@ -85,6 +100,7 @@ function makeSeed() {
       { mode: 'Review', score: '8 images', xp: 64, ts: now - 1 * DAY_MS },
       { mode: 'Images', score: '18 / 30', xp: 150, ts: now - 2 * DAY_MS },
     ] as RecentSession[],
+    settings: { haptics: true, reminders: false, reduceMotion: false } as Settings,
   };
 }
 
@@ -185,9 +201,38 @@ export const useProgress = create<ProgressState>()(
           };
         }),
 
+      recordImages: (correct, total, elapsedSec) =>
+        set((s) => {
+          const now = Date.now();
+          const { streak, iso } = bumpStreak(s.lastPlayedISO, s.streak, now);
+          const week = [...s.week];
+          week[weekdayIndex(now)] += 1;
+          const xpGain = correct * 6;
+          const best =
+            !s.imagesBest || correct > s.imagesBest.correct
+              ? { correct, timeSec: elapsedSec }
+              : s.imagesBest;
+          return {
+            xp: s.xp + xpGain,
+            streak,
+            lastPlayedISO: iso,
+            week,
+            imagesBest: best,
+            recent: pushRecent(s.recent, {
+              mode: 'Images',
+              score: `${correct} / ${total}`,
+              xp: xpGain,
+              ts: now,
+            }),
+          };
+        }),
+
       advanceSrDay: (days) => set((s) => ({ srDay: s.srDay + days })),
 
-      resetProgress: () => set(() => ({ ...makeSeed() })),
+      setSetting: (key, value) => set((s) => ({ settings: { ...s.settings, [key]: value } })),
+
+      // Reset all progress but keep the user's settings.
+      resetProgress: () => set((s) => ({ ...makeSeed(), settings: s.settings })),
     }),
     {
       name: 'mnemos-progress-v1',

@@ -9,6 +9,7 @@ import { AppBar, Card, enterUp, SquareButton, T } from '@/components/ui';
 import { LEVELS, LEVEL_ORDER, type NumbersLevel } from '@/data/content';
 import { DIGIT_MAP, pegByN } from '@/data/majorSystem';
 import { benchPlace, chunk2, fmtTime, genDigits, scoreNumbers, scorePairs, type NumbersScore } from '@/engine/digits';
+import * as haptics from '@/lib/haptics';
 import { useProgress } from '@/state/store';
 import { useUI } from '@/state/ui';
 import { colors, radii } from '@/theme/tokens';
@@ -70,6 +71,8 @@ export default function NumbersScreen() {
     recordNumbers(sc, elapsed);
     setScore(sc);
     setPhase('score');
+    if (sc.lead === sc.total) haptics.success();
+    else haptics.tapMedium();
     showToast(`+${sc.xpGain} XP earned`);
   };
 
@@ -108,8 +111,14 @@ export default function NumbersScreen() {
           digits={digits}
           input={input}
           total={total}
-          onKey={(d) => setInput((v) => (v.length >= total ? v : v + d))}
-          onDel={() => setInput((v) => v.slice(0, -1))}
+          onKey={(d) => {
+            haptics.tapKey();
+            setInput((v) => (v.length >= total ? v : v + d));
+          }}
+          onDel={() => {
+            haptics.tapKey();
+            setInput((v) => v.slice(0, -1));
+          }}
           onSubmit={submit}
           onEmpty={() => showToast('Type some digits first')}
         />

@@ -9,6 +9,7 @@ import { AppBar, Card, enterUp, ProgressBar, SquareButton, T } from '@/component
 import { PALACE } from '@/data/content';
 import { fmtTime } from '@/engine/digits';
 import { scorePalace, wordMatches, type PalaceScore } from '@/engine/palace';
+import * as haptics from '@/lib/haptics';
 import { useProgress } from '@/state/store';
 import { useUI } from '@/state/ui';
 import { colors, radii } from '@/theme/tokens';
@@ -37,6 +38,7 @@ export default function PalaceScreen() {
     setPhase('memorize');
   };
   const next = () => {
+    haptics.tapKey();
     if (index >= loci.length - 1) {
       setElapsed(Math.round((Date.now() - startTs.current) / 1000));
       setPhase('recallintro');
@@ -49,6 +51,8 @@ export default function PalaceScreen() {
     recordPalace(sc, elapsed);
     setScore(sc);
     setPhase('score');
+    if (sc.correct === sc.total) haptics.success();
+    else haptics.tapMedium();
     showToast(`+${sc.xpGain} XP earned`);
   };
   const restart = () => {
