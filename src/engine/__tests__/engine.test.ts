@@ -1,3 +1,5 @@
+import { describe, expect, test } from '@jest/globals';
+
 import { genDigits, chunk2, fmtTime, scoreNumbers, benchPlace, scorePairs } from '@/engine/digits';
 import { scorePalace, wordMatches } from '@/engine/palace';
 import { dueIds, reviewCard, srOffset, stageCounts, type SrCard } from '@/engine/sr';
