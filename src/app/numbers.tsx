@@ -51,7 +51,6 @@ export default function NumbersScreen() {
   };
   useEffect(() => {
     if (phase === 'memorize' && remaining === 0) goRecall();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remaining, phase]);
 
   const exit = () => router.back();
