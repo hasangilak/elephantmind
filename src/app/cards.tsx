@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CardChip } from '@/components/CardChip';
 import { ArrowRight, Play, Timer } from '@/components/Icon';
-import { AppBar, CountUp, T, useEntering } from '@/components/ui';
+import { AppBar, CountUp, ProgressBar, SquareButton, T, useEntering } from '@/components/ui';
 import { CARDS_LEVELS, CARDS_LEVEL_ORDER, COMBO_SIZES, wordForCard, type CardDef, type CardsLevel } from '@/data/cards';
 import { dealRound, scoreCards, type CardsScore } from '@/engine/cards';
 import { fmtTime } from '@/engine/digits';
@@ -17,12 +17,6 @@ import { useUI } from '@/state/ui';
 import { colors, radii } from '@/theme/tokens';
 
 type Phase = 'ready' | 'memorize' | 'recall' | 'score';
-
-function chunk<T>(arr: T[], n: number): T[][] {
-  const out: T[][] = [];
-  for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n));
-  return out;
-}
 
 export default function CardsScreen() {
   const router = useRouter();
@@ -235,17 +229,37 @@ function Memorize({
   onToggleHints: () => void;
   onDone: () => void;
 }) {
-  const groups = chunk(deck, combo);
+  const [i, setI] = useState(0);
+  const total = deck.length;
+  const card = deck[i];
   const timerColor = remaining <= 10 ? colors.err : colors.ink;
+  const scene = Math.floor(i / combo) + 1;
+  const sceneStart = (scene - 1) * combo;
+  const sceneSize = Math.min(combo, total - sceneStart);
+  const posInScene = i - sceneStart + 1;
+  const pct = Math.round(((i + 1) / total) * 100);
+  const next = () => {
+    haptics.tapKey();
+    if (i >= total - 1) onDone();
+    else setI(i + 1);
+  };
+  const back = () => {
+    if (i > 0) {
+      haptics.tapKey();
+      setI(i - 1);
+    }
+  };
+  if (!card) return null;
+  const cardColor = card.color === 'red' ? colors.err : colors.ink;
   return (
-    <View style={{ flex: 1, paddingHorizontal: 20, paddingBottom: 18 }}>
+    <View style={{ flex: 1, paddingHorizontal: 20, paddingBottom: 20 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <View>
           <T s={11} w={700} ls={1} c={colors.ink3}>
             MEMORIZE
           </T>
           <T s={13} w={600} c={colors.ink2}>
-            {deck.length} cards, in order
+            Card {i + 1} of {total}
           </T>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: radii.lg, paddingVertical: 8, paddingHorizontal: 14 }}>
@@ -255,43 +269,65 @@ function Memorize({
           </T>
         </View>
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ gap: 10, paddingBottom: 8 }}>
-        {groups.map((g, gi) => (
-          <View key={gi} style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: radii.lg, padding: 10 }}>
-            <T s={10} w={700} ls={0.8} c={colors.ink3} style={{ marginBottom: 8 }}>
-              SCENE {gi + 1}
-            </T>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-              {g.map((card, j) => {
-                const n = gi * combo + j + 1;
-                return (
-                  <View key={card.id} style={{ alignItems: 'center', gap: 3, width: 56 }}>
-                    <T mono s={10} c={colors.ink3}>
-                      {n}
-                    </T>
-                    <CardChip card={card} size="md" />
-                    {hints && (
-                      <T s={10} w={600} c={colors.accent} numberOfLines={1} style={{ height: 13 }}>
-                        {wordForCard(card, cardWords)}
-                      </T>
-                    )}
-                  </View>
-                );
-              })}
-            </View>
-          </View>
-        ))}
-      </ScrollView>
+      <ProgressBar pct={pct} height={6} style={{ marginBottom: 4 }} />
+
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <T s={12} w={700} ls={0.8} c={colors.ink3}>
+          SCENE {scene} · CARD {posInScene} / {sceneSize}
+        </T>
+        <View
+          style={{
+            width: 150,
+            height: 210,
+            borderRadius: 20,
+            backgroundColor: '#fff',
+            borderWidth: 1,
+            borderColor: colors.line,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginVertical: 18,
+            shadowColor: '#000',
+            shadowOpacity: 0.12,
+            shadowRadius: 16,
+            shadowOffset: { width: 0, height: 10 },
+            elevation: 4,
+          }}
+        >
+          <T w={800} s={64} c={cardColor}>
+            {card.rank}
+          </T>
+          <T s={52} c={cardColor}>
+            {card.sym}
+          </T>
+        </View>
+        {hints ? (
+          <T s={22} w={800} ls={-0.3} c={colors.accentDeep}>
+            {wordForCard(card, cardWords)}
+          </T>
+        ) : (
+          <T s={13} c={colors.ink3}>
+            words hidden
+          </T>
+        )}
+        <T s={12.5} c={colors.ink3} style={{ textAlign: 'center', lineHeight: 18, maxWidth: 240, marginTop: 8 }}>
+          Weave it into your scene-{scene} story.
+        </T>
+      </View>
+
       <Pressable onPress={onToggleHints}>
-        <T s={12.5} w={600} c={colors.ink3} style={{ textAlign: 'center', marginVertical: 12 }}>
+        <T s={12.5} w={600} c={colors.ink3} style={{ textAlign: 'center', marginBottom: 12 }}>
           {hints ? 'Hide words' : 'Show words'}
         </T>
       </Pressable>
-      <Pressable onPress={onDone} style={[darkBtn, { height: 52 }]}>
-        <T s={15.5} w={700} c={colors.onInk}>
-          I've got it — rebuild now
-        </T>
-      </Pressable>
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        <SquareButton onPress={back} />
+        <Pressable onPress={next} style={[darkBtn, { flex: 1, height: 52 }]}>
+          <T s={15} w={700} c={colors.onInk}>
+            {i >= total - 1 ? 'Done — rebuild' : 'Next card'}
+          </T>
+          <ArrowRight size={16} color={colors.onInk} strokeWidth={2.2} />
+        </Pressable>
+      </View>
     </View>
   );
 }
