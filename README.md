@@ -1,56 +1,49 @@
-# Welcome to your Expo app 👋
+# Mnemos
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A memory-training game for iOS, Android and web, built with Expo + React Native.
+It teaches the techniques competitive memory athletes use — the **memory palace**,
+the **Major System** for numbers, and **Rule-of-Five spaced repetition** — through
+short, playable rounds. Built from the research in [`research.md`](./research.md)
+and the Mnemos design (Claude Design).
+
+It is solo and fully local: all progress (XP, streak, spaced-repetition deck,
+discipline bests, history) is stored on-device with AsyncStorage. No backend, no
+accounts.
+
+## Screens
+
+- **Path (Home)** — level/XP, a resume card, and a 3-tier progression of disciplines.
+- **Numbers** — a Major System lesson, then a timed memorize → keypad-recall →
+  score round (beginner / intermediate / advanced).
+- **Palace** — stash words at 12 rooms of a memory palace, then walk it back.
+- **Review** — Rule-of-Five spaced repetition over the 00–99 number-images, with a
+  "simulate time" control to watch cards fall due.
+- **Stats** — level, streak, Major System mastery, weekly activity, bests, history.
+- **Roadmap** — the encoding upgrade path and planned features.
 
 ## Get started
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
 ```bash
-npm run reset-project
+npm install
+npx expo start        # then press i / a / w for iOS, Android, or web
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Project layout
 
-### Other setup steps
+```
+src/
+  app/             expo-router routes ((tabs) + numbers + palace flows)
+  engine/          pure game logic (digits/scoring, palace, spaced repetition, leveling)
+  data/            Major System peg table + static game content
+  state/           Zustand progress store (AsyncStorage) + ephemeral UI store
+  components/      shared UI (Icon, Card, Ring, Toast, tab bar, layout helpers)
+  theme/           design tokens (colors, fonts, radii)
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Scripts
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm test           # jest — engine/data unit tests
+npm run typecheck  # tsc --noEmit
+npm run lint       # expo lint
+```
