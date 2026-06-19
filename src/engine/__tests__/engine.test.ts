@@ -4,7 +4,9 @@ import { genDigits, chunk2, fmtTime, scoreNumbers, benchPlace, scorePairs } from
 import { scorePalace, wordMatches } from '@/engine/palace';
 import { dueIds, reviewCard, srOffset, stageCounts, type SrCard } from '@/engine/sr';
 import { levelForXp, xpInto, xpPct, rankForLevel, greetingFor } from '@/engine/leveling';
+import { dealRound, scoreCards } from '@/engine/cards';
 import { PEGS, pegByN } from '@/data/majorSystem';
+import { DECK } from '@/data/cards';
 
 describe('digits', () => {
   test('genDigits length and charset', () => {
@@ -145,5 +147,39 @@ describe('major system data', () => {
     expect(pegByN('07')?.word).toBe('Sock');
     expect(pegByN('42')?.word).toBe('Rhino');
     expect(pegByN('99')?.word).toBe('Puppy');
+  });
+});
+
+describe('cards', () => {
+  test('deck is 52 unique cards with default words', () => {
+    expect(DECK).toHaveLength(52);
+    expect(new Set(DECK.map((c) => c.id)).size).toBe(52);
+    expect(new Set(DECK.map((c) => c.label)).size).toBe(52);
+    expect(DECK.every((c) => c.defaultWord.length > 0)).toBe(true);
+  });
+
+  test('dealRound returns the requested count from the deck', () => {
+    const round = dealRound(26);
+    expect(round).toHaveLength(26);
+    expect(new Set(round.map((c) => c.id)).size).toBe(26);
+  });
+
+  test('scoreCards: position-correct, lead run and xp', () => {
+    const a = DECK.slice(0, 5);
+    // answer: positions 0,1 right, 2 wrong, 3,4 right → correct=4, lead=2
+    const answer = [a[0], a[1], a[3], a[3], a[4]];
+    const r = scoreCards(a, answer);
+    expect(r.lead).toBe(2);
+    expect(r.correct).toBe(4);
+    expect(r.total).toBe(5);
+    expect(r.xpGain).toBe(r.correct * 4);
+  });
+
+  test('scoreCards: perfect reorganize', () => {
+    const a = DECK.slice(0, 10);
+    const r = scoreCards(a, [...a]);
+    expect(r.correct).toBe(10);
+    expect(r.lead).toBe(10);
+    expect(r.accuracy).toBe(100);
   });
 });

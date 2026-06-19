@@ -49,6 +49,10 @@ export interface ImagesBest {
   correct: number;
   timeSec: number;
 }
+export interface CardsBest {
+  correct: number;
+  timeSec: number;
+}
 
 export interface Settings {
   haptics: boolean;
@@ -66,19 +70,27 @@ export interface ProgressState {
   numbersBest: NumbersBest | null;
   palaceBest: PalaceBest | null;
   imagesBest: ImagesBest | null;
+  cardsBest: CardsBest | null;
   recent: RecentSession[];
   /** Activity counts, Mon..Sun. */
   week: number[];
   settings: Settings;
+  /** Per-user overrides of card association words, keyed by card id. */
+  cardWords: Record<string, string>;
+  /** Preferred cards-per-story grouping (1–4). */
+  cardCombo: number;
 
   // actions
   recordNumbers(score: NumbersScore, elapsedSec: number): void;
   recordPalace(score: PalaceScore, elapsedSec: number): void;
   recordImages(correct: number, total: number, elapsedSec: number): void;
+  recordCards(correct: number, total: number, elapsedSec: number): void;
   reviewSr(n: string, gotIt: boolean): void;
   finishReview(gotCount: number): void;
   advanceSrDay(days: number): void;
   setSetting<K extends keyof Settings>(key: K, value: Settings[K]): void;
+  setCardWord(id: number, word: string): void;
+  setCardCombo(n: number): void;
   resetProgress(): void;
 }
 
@@ -93,6 +105,9 @@ function makeSeed() {
     numbersBest: { digits: 40, timeSec: 52 } as NumbersBest,
     palaceBest: { words: 12, timeSec: 130 } as PalaceBest,
     imagesBest: { correct: 18, timeSec: 100 } as ImagesBest,
+    cardsBest: null as CardsBest | null,
+    cardWords: {} as Record<string, string>,
+    cardCombo: 3,
     week: [3, 5, 2, 6, 4, 7, 5],
     recent: [
       { mode: 'Numbers', score: '34 / 40 digits', xp: 180, ts: now - 5 * 3600_000 },
@@ -227,12 +242,44 @@ export const useProgress = create<ProgressState>()(
           };
         }),
 
+      recordCards: (correct, total, elapsedSec) =>
+        set((s) => {
+          const now = Date.now();
+          const { streak, iso } = bumpStreak(s.lastPlayedISO, s.streak, now);
+          const week = [...s.week];
+          week[weekdayIndex(now)] += 1;
+          const xpGain = correct * 4;
+          const best =
+            !s.cardsBest || correct > s.cardsBest.correct
+              ? { correct, timeSec: elapsedSec }
+              : s.cardsBest;
+          return {
+            xp: s.xp + xpGain,
+            streak,
+            lastPlayedISO: iso,
+            week,
+            cardsBest: best,
+            recent: pushRecent(s.recent, {
+              mode: 'Cards',
+              score: `${correct} / ${total} cards`,
+              xp: xpGain,
+              ts: now,
+            }),
+          };
+        }),
+
       advanceSrDay: (days) => set((s) => ({ srDay: s.srDay + days })),
 
       setSetting: (key, value) => set((s) => ({ settings: { ...s.settings, [key]: value } })),
 
-      // Reset all progress but keep the user's settings.
-      resetProgress: () => set((s) => ({ ...makeSeed(), settings: s.settings })),
+      setCardWord: (id, word) =>
+        set((s) => ({ cardWords: { ...s.cardWords, [id]: word } })),
+
+      setCardCombo: (n) => set(() => ({ cardCombo: n })),
+
+      // Reset progress but keep the user's settings and custom card system.
+      resetProgress: () =>
+        set((s) => ({ ...makeSeed(), settings: s.settings, cardWords: s.cardWords, cardCombo: s.cardCombo })),
     }),
     {
       name: 'mnemos-progress-v1',
