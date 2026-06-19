@@ -17,6 +17,7 @@ export default function StatsScreen() {
   const numbersBest = useProgress((s) => s.numbersBest);
   const palaceBest = useProgress((s) => s.palaceBest);
   const imagesBest = useProgress((s) => s.imagesBest);
+  const cardsBest = useProgress((s) => s.cardsBest);
   const recent = useProgress((s) => s.recent);
   const week = useProgress((s) => s.week);
 
@@ -47,7 +48,13 @@ export default function StatsScreen() {
       pct: imagesBest ? Math.min(100, Math.round((imagesBest.correct / 18) * 100)) : 0,
       locked: false,
     },
-    { name: 'Cards', best: 'Locked', sub: 'reach Tier 2 end', pct: 0, locked: true },
+    {
+      name: 'Cards',
+      best: cardsBest ? `${cardsBest.correct} cards` : '—',
+      sub: cardsBest ? `best · ${fmtTime(cardsBest.timeSec)}` : 'not played yet',
+      pct: cardsBest ? Math.min(100, Math.round((cardsBest.correct / 52) * 100)) : 0,
+      locked: false,
+    },
   ];
 
   return (
