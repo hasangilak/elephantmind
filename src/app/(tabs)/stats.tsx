@@ -16,6 +16,7 @@ export default function StatsScreen() {
   const srCards = useProgress((s) => s.srCards);
   const numbersBest = useProgress((s) => s.numbersBest);
   const palaceBest = useProgress((s) => s.palaceBest);
+  const imagesBest = useProgress((s) => s.imagesBest);
   const recent = useProgress((s) => s.recent);
   const week = useProgress((s) => s.week);
 
@@ -39,7 +40,13 @@ export default function StatsScreen() {
       pct: palaceBest ? Math.round((palaceBest.words / 12) * 100) : 0,
       locked: false,
     },
-    { name: 'Images', best: '18 / 30', sub: 'best · 1:40', pct: 38, locked: false },
+    {
+      name: 'Images',
+      best: imagesBest ? `${imagesBest.correct} images` : '—',
+      sub: imagesBest ? `best · ${fmtTime(imagesBest.timeSec)}` : 'not played yet',
+      pct: imagesBest ? Math.min(100, Math.round((imagesBest.correct / 18) * 100)) : 0,
+      locked: false,
+    },
     { name: 'Cards', best: 'Locked', sub: 'reach Tier 2 end', pct: 0, locked: true },
   ];
 

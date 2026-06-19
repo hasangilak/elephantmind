@@ -245,14 +245,15 @@ export interface CountUpProps extends TProps {
 }
 
 /** Animated number that counts up to `value` (instant when reduce-motion is on). */
-export function CountUp({ value, duration = 700, ...textProps }: CountUpProps) {
+export function CountUp({ value, duration, ...textProps }: CountUpProps) {
   const reduce = useProgress((s) => s.settings.reduceMotion);
-  const [display, setDisplay] = useState(value);
+  if (reduce) return <T {...textProps}>{value}</T>;
+  return <AnimatedCount value={value} duration={duration} {...textProps} />;
+}
+
+function AnimatedCount({ value, duration = 700, ...textProps }: CountUpProps) {
+  const [display, setDisplay] = useState(0);
   useEffect(() => {
-    if (reduce) {
-      setDisplay(value);
-      return;
-    }
     let raf = 0;
     const start = Date.now();
     const tick = () => {
@@ -263,7 +264,7 @@ export function CountUp({ value, duration = 700, ...textProps }: CountUpProps) {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [value, duration, reduce]);
+  }, [value, duration]);
   return <T {...textProps}>{display}</T>;
 }
 

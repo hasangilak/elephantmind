@@ -148,7 +148,14 @@ export default function HomeScreen() {
           accentIcon: true,
           onPress: () => router.push('/palace'),
         },
-        { glyph: 'I', name: 'Images · Link / Story', meta: '30 images in a chain', tag: '78%', onPress: onLocked },
+        {
+          glyph: 'I',
+          name: 'Images · Link / Story',
+          meta: 'Chain images in order',
+          tag: 'PLAY',
+          accentIcon: true,
+          onPress: () => router.push('/images'),
+        },
       ],
     },
     {

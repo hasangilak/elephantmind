@@ -142,3 +142,27 @@ export const SEED_SR_CARDS: SrCard[] = [
 
 /** Days already credited as learned, added to SR stage≥1 count (design: +24). */
 export const PEGS_LEARNED_BASE = 24;
+
+/** Distinct, vivid emoji used as the "images" in the Link/Story discipline. */
+export const IMAGE_POOL = [
+  '🦊', '🚀', '🍎', '🎸', '🐙', '🌵', '🧲', '🪀', '⚓', '🧀',
+  '🦉', '🪐', '🧭', '🔔', '🐉', '🍄', '🎺', '🦷', '🪂', '🧦',
+  '🦞', '🌋', '🪓', '🧊', '🚜', '🦩', '🎈', '🧱', '🪤', '🦓',
+  '🍔', '🪕', '🐌', '🧪', '🦄', '🌂', '🛼', '🪣', '🔑', '🕯️',
+];
+
+export interface ImagesLevel {
+  id: 'beginner' | 'intermediate' | 'advanced';
+  label: string;
+  count: number;
+  time: number;
+  sub: string;
+}
+
+export const IMAGES_LEVELS: Record<ImagesLevel['id'], ImagesLevel> = {
+  beginner: { id: 'beginner', label: 'Beginner', count: 6, time: 30, sub: '6 images · 30s' },
+  intermediate: { id: 'intermediate', label: 'Intermediate', count: 12, time: 45, sub: '12 images · 45s' },
+  advanced: { id: 'advanced', label: 'Advanced', count: 18, time: 45, sub: '18 images · 45s' },
+};
+
+export const IMAGES_LEVEL_ORDER: ImagesLevel['id'][] = ['beginner', 'intermediate', 'advanced'];
