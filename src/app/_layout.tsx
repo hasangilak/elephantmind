@@ -1,15 +1,60 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import { useColorScheme } from 'react-native';
+import {
+  SchibstedGrotesk_400Regular,
+  SchibstedGrotesk_500Medium,
+  SchibstedGrotesk_600SemiBold,
+  SchibstedGrotesk_700Bold,
+  SchibstedGrotesk_800ExtraBold,
+  useFonts,
+} from '@expo-google-fonts/schibsted-grotesk';
+import { SpaceMono_400Regular, SpaceMono_700Bold } from '@expo-google-fonts/space-mono';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
+import { View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { ToastHost } from '@/components/ui';
+import { useProgress } from '@/state/store';
+import { colors } from '@/theme/tokens';
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    SchibstedGrotesk_400Regular,
+    SchibstedGrotesk_500Medium,
+    SchibstedGrotesk_600SemiBold,
+    SchibstedGrotesk_700Bold,
+    SchibstedGrotesk_800ExtraBold,
+    SpaceMono_400Regular,
+    SpaceMono_700Bold,
+  });
+  const hydrated = useProgress((s) => s.hydrated);
+
+  // Kick rehydration (zustand persist hydrates async from AsyncStorage).
+  useEffect(() => {
+    useProgress.persist.rehydrate();
+  }, []);
+
+  if (!fontsLoaded || !hydrated) {
+    return <View style={{ flex: 1, backgroundColor: colors.paper }} />;
+  }
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.paper }}>
+      <SafeAreaProvider>
+        <StatusBar style="dark" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.paper },
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="numbers" options={{ animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="palace" options={{ animation: 'slide_from_bottom' }} />
+        </Stack>
+        <ToastHost />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
