@@ -1,5 +1,5 @@
 /**
- * Design tokens ported 1:1 from the Mnemos Claude Design file (Mnemos.dc.html).
+ * Design tokens ported 1:1 from the Elephantam Claude Design.
  * The design exposed configurable `accentColor`, `paperTone` and `errorColor`
  * props; we bake the defaults here (warm paper, #3f6f54 accent).
  */

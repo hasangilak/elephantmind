@@ -14,7 +14,7 @@ const TAB_META: Record<string, { label: string; icon: string }> = {
   roadmap: { label: 'Roadmap', icon: TAB_ICONS.roadmap },
 };
 
-function MnemosTabBar({ state, navigation }: BottomTabBarProps) {
+function ElephantamTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   return (
     <View
@@ -57,7 +57,7 @@ function MnemosTabBar({ state, navigation }: BottomTabBarProps) {
 
 export default function TabsLayout() {
   return (
-    <Tabs tabBar={(props) => <MnemosTabBar {...props} />} screenOptions={{ headerShown: false }}>
+    <Tabs tabBar={(props) => <ElephantamTabBar {...props} />} screenOptions={{ headerShown: false }}>
       <Tabs.Screen name="index" />
       <Tabs.Screen name="review" />
       <Tabs.Screen name="stats" />

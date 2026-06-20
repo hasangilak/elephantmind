@@ -1,5 +1,5 @@
 /**
- * Memory Palace discipline — pure scoring logic ported from the Mnemos design.
+ * Memory Palace discipline — pure scoring logic ported from the Elephantam design.
  */
 
 /** Case-insensitive, trimmed match of a recalled word against the target. */

@@ -1,5 +1,5 @@
 /**
- * Numbers discipline — pure logic ported from the Mnemos design (DCLogic).
+ * Numbers discipline — pure logic ported from the Elephantam design (DCLogic).
  * No React Native imports so it can be unit-tested directly.
  */
 

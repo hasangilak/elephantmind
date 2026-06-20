@@ -1,17 +1,17 @@
-# Mnemos
+# Elephantam
 
 A memory-training game for iOS, Android and web, built with Expo + React Native.
 It teaches the techniques competitive memory athletes use — the **memory palace**,
 the **Major System** for numbers, and **Rule-of-Five spaced repetition** — through
 short, playable rounds. Built from the research in [`research.md`](./research.md)
-and the Mnemos design (Claude Design).
+and the Elephantam design (Claude Design).
 
 It is solo and fully local: all progress (XP, streak, spaced-repetition deck,
 discipline bests, history) is stored on-device with AsyncStorage. No backend, no
 accounts.
 
 <p align="center">
-  <img src="docs/screenshots/home.jpg" alt="Mnemos home screen" width="300" />
+  <img src="docs/screenshots/home.jpg" alt="Elephantam home screen" width="300" />
 </p>
 
 ## Screens
@@ -36,8 +36,8 @@ This is a personal-use app — it is **not published to the app stores**. Clone 
 and run it yourself:
 
 ```bash
-git clone https://github.com/hasangilak/elephantmind.git mnemos
-cd mnemos
+git clone https://github.com/hasangilak/elephantmind.git elephantam
+cd elephantam
 npm install
 npx expo start        # press w for web, or scan the QR with Expo Go
 ```

@@ -1,7 +1,7 @@
 /**
  * The Major System — the game's core encoding content.
  *
- * The Mnemos design shipped 14 sample pegs; the product is built around the full
+ * The Elephantam design shipped 14 sample pegs; the product is built around the full
  * 100-image system ("x/100 mastery"). This is the complete 00–99 peg table.
  * Each word's consonant sounds spell its number per the Major System mapping
  * (0=s/z 1=t/d 2=n 3=m 4=r 5=l 6=j/sh/ch 7=k/g 8=f/v 9=p/b); vowels are free.

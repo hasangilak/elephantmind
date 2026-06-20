@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Mnemos",
-    "slug": "mnemos",
+    "name": "Elephantam",
+    "slug": "elephantam",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mnemos",
+    "scheme": "elephantam",
     "userInterfaceStyle": "automatic",
     "android": {
       "adaptiveIcon": {
@@ -14,7 +14,7 @@
         "monochromeImage": "./assets/images/logo.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.mnemos.app"
+      "package": "com.elephantam.app"
     },
     "web": {
       "output": "single",

@@ -137,7 +137,7 @@ export default function SettingsScreen() {
         </Card>
 
         <T s={12} c={colors.ink3} style={{ textAlign: 'center', lineHeight: 18 }}>
-          Mnemos · a memory-training game.{'\n'}Built on the method of loci & the Major System.
+          Elephantam · a memory-training game.{'\n'}Built on the method of loci & the Major System.
         </T>
       </ScrollView>
     </View>

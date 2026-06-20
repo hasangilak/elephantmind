@@ -1,5 +1,5 @@
 /**
- * Spaced repetition ("Rule of Five") — pure logic ported from the Mnemos design.
+ * Spaced repetition ("Rule of Five") — pure logic ported from the Elephantam design.
  *
  * Stages 0..5. A card is "due" when due <= currentDay and stage < 5.
  * On a correct review: stage advances (capped at 5) and next due jumps by the

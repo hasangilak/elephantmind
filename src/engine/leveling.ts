@@ -1,5 +1,5 @@
 /**
- * XP / level / rank helpers — ported from the Mnemos design's renderVals.
+ * XP / level / rank helpers — ported from the Elephantam design's renderVals.
  */
 
 export const XP_PER_LEVEL = 400;

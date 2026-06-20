@@ -278,7 +278,7 @@ export const useProgress = create<ProgressState>()(
         set((s) => ({ ...makeSeed(), name: s.name, settings: s.settings, cardWords: s.cardWords, cardCombo: s.cardCombo })),
     }),
     {
-      name: 'mnemos-progress-v2',
+      name: 'elephantam-progress-v1',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: ({ hydrated, ...rest }) => rest,
       onRehydrateStorage: () => (state) => {

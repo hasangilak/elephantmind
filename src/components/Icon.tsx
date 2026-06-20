@@ -1,5 +1,5 @@
 /**
- * SVG icon set — paths lifted directly from the Mnemos design.
+ * SVG icon set — paths lifted directly from the Elephantam design.
  */
 import React from 'react';
 import Svg, { Circle, Path } from 'react-native-svg';

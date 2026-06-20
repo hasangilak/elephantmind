@@ -6,7 +6,7 @@
 #   ARCH=armeabi-v7a,arm64-v8a,x86,x86_64 npm run build:android    # universal (also runs on emulators)
 #   VARIANT=debug npm run build:android                            # debug (needs Metro running; rarely useful)
 #
-# Output: builds/mnemos-<variant>-<timestamp>.apk  (the builds/ folder is gitignored)
+# Output: builds/elephantam-<variant>-<timestamp>.apk  (the builds/ folder is gitignored)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -52,7 +52,7 @@ echo "▶ gradle $TASK ($ARCH) — the first build takes a while…"
 )
 
 mkdir -p builds
-OUT="builds/mnemos-${VARIANT}-$(date +%Y%m%d-%H%M%S).apk"
+OUT="builds/elephantam-${VARIANT}-$(date +%Y%m%d-%H%M%S).apk"
 cp "android/app/build/outputs/apk/${VARIANT}/app-${VARIANT}.apk" "$OUT"
 echo ""
 echo "✅ APK ready → $OUT"

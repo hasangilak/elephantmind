@@ -1,5 +1,5 @@
 /**
- * Shared UI primitives styled to the Mnemos design.
+ * Shared UI primitives styled to the Elephantam design.
  */
 import React, { useEffect, useState } from 'react';
 import {
