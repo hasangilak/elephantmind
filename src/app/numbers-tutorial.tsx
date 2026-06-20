@@ -27,11 +27,11 @@ const BEATS: Beat[] = [
   { kind: 'encode', i: 0, dur: DEMO },
   { kind: 'encode', i: 1, dur: DEMO },
   { kind: 'encode', i: 2, dur: DEMO },
-  { kind: 'chain', title: 'String them into one scene', body: `A charging rhino tramples a soggy sock, then flips a shiny dime. One absurd movie now holds all six digits.`, dur: SLOW },
+  { kind: 'chain', title: 'The Story method', body: `No palace needed — just chain the images into one running story: a charging rhino tramples a soggy sock, then flips a shiny dime. The plot locks their order.`, dur: SLOW },
   { kind: 'recall', i: 0, dur: DEMO },
   { kind: 'recall', i: 1, dur: DEMO },
   { kind: 'recall', i: 2, dur: DEMO },
-  { kind: 'done', title: `You just stored ${JOINED}`, body: 'Six digits, recalled as one silly story. Learn all 100 pegs and any number becomes a movie you can replay.', dur: 0 },
+  { kind: 'done', title: `You just stored ${JOINED}`, body: 'Six digits as one silly story. Chain the images into a story or drop them in a palace — both lock the order. Learn all 100 pegs and any number turns into a movie.', dur: 0 },
 ];
 
 /** Which peg slots are filled (image known) and the active one, up to `step`. */

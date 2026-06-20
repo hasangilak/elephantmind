@@ -92,6 +92,7 @@ export default function NumbersScreen() {
           onBack={() => (lessonStep > 0 ? setLessonStep((s) => s - 1) : exit())}
           onNext={() => (lessonStep >= LESSON_STEPS.length - 1 ? setPhase('ready') : setLessonStep((s) => s + 1))}
           onSkip={() => setPhase('ready')}
+          onLearn={() => router.push('/numbers-tutorial')}
         />
       )}
       {phase === 'ready' && (
@@ -148,6 +149,7 @@ function Lesson({
   onBack,
   onNext,
   onSkip,
+  onLearn,
 }: {
   step: number;
   quizPick: string | null;
@@ -156,6 +158,7 @@ function Lesson({
   onBack: () => void;
   onNext: () => void;
   onSkip: () => void;
+  onLearn: () => void;
 }) {
   const kind = LESSON_STEPS[step];
   const entering = useEntering();
@@ -176,7 +179,10 @@ function Lesson({
           </ScrollView>
         </Card>
       </Animated.View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 16 }}>
+      <View style={{ marginTop: 16 }}>
+        <DemoBanner label="Prefer to watch? See a worked example" onPress={onLearn} />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12 }}>
         <SquareButton onPress={onBack} />
         <Pressable onPress={onNext} style={btnDark}>
           <T s={15} w={700} c={colors.onInk}>
