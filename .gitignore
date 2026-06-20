@@ -44,3 +44,6 @@ example
 
 # local build artifacts
 *.apk
+/builds/
+.pkg.bak
+.app.bak
