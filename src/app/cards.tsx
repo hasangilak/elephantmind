@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CardChip } from '@/components/CardChip';
 import { ArrowRight, Play, Timer } from '@/components/Icon';
+import { DemoBanner } from '@/components/Tutorial';
 import { AppBar, CountUp, ProgressBar, SquareButton, T, useEntering } from '@/components/ui';
 import { CARDS_LEVELS, CARDS_LEVEL_ORDER, COMBO_SIZES, wordForCard, type CardDef, type CardsLevel } from '@/data/cards';
 import { dealRound, scoreCards, type CardsScore } from '@/engine/cards';
@@ -98,6 +99,7 @@ export default function CardsScreen() {
           onCombo={setCardCombo}
           onEdit={() => router.push('/cards-system')}
           onStart={start}
+          onLearn={() => router.push('/cards-tutorial')}
         />
       )}
       {phase === 'memorize' && (
@@ -130,6 +132,7 @@ function Ready({
   onCombo,
   onEdit,
   onStart,
+  onLearn,
 }: {
   levelId: CardsLevel['id'];
   onPick: (id: CardsLevel['id']) => void;
@@ -137,6 +140,7 @@ function Ready({
   onCombo: (n: number) => void;
   onEdit: () => void;
   onStart: () => void;
+  onLearn: () => void;
 }) {
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 20 }}>
@@ -200,7 +204,8 @@ function Ready({
         <ArrowRight size={18} color={colors.ink3} strokeWidth={2} />
       </Pressable>
 
-      <Pressable onPress={onStart} style={accentBtn}>
+      <DemoBanner label="New here? Watch a worked example" onPress={onLearn} />
+      <Pressable onPress={onStart} style={[accentBtn, { marginTop: 12 }]}>
         <T s={16} w={700} c="#fff">
           Start round
         </T>

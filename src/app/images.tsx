@@ -5,6 +5,7 @@ import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Play, Timer } from '@/components/Icon';
+import { DemoBanner } from '@/components/Tutorial';
 import { AppBar, Card, CountUp, T, useEntering } from '@/components/ui';
 import { IMAGES_LEVELS, IMAGES_LEVEL_ORDER, IMAGE_POOL, type ImagesLevel } from '@/data/content';
 import { fmtTime } from '@/engine/digits';
@@ -84,7 +85,9 @@ export default function ImagesScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
       <AppBar title="Images" subtitle="Link / Story" onClose={exit} />
-      {phase === 'ready' && <Ready levelId={levelId} onPick={setLevelId} onStart={start} />}
+      {phase === 'ready' && (
+        <Ready levelId={levelId} onPick={setLevelId} onStart={start} onLearn={() => router.push('/images-tutorial')} />
+      )}
       {phase === 'memorize' && (
         <Memorize sequence={sequence} remaining={remaining} onDone={goRecall} />
       )}
@@ -107,7 +110,7 @@ export default function ImagesScreen() {
 
 /* ----------------------------- READY ----------------------------- */
 
-function Ready({ levelId, onPick, onStart }: { levelId: ImagesLevel['id']; onPick: (id: ImagesLevel['id']) => void; onStart: () => void }) {
+function Ready({ levelId, onPick, onStart, onLearn }: { levelId: ImagesLevel['id']; onPick: (id: ImagesLevel['id']) => void; onStart: () => void; onLearn: () => void }) {
   return (
     <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 8, paddingBottom: 20 }}>
       <T s={24} w={800} ls={-0.5} style={{ marginBottom: 4 }}>
@@ -139,7 +142,8 @@ function Ready({ levelId, onPick, onStart }: { levelId: ImagesLevel['id']; onPic
         })}
       </View>
       <View style={{ flex: 1 }} />
-      <Pressable onPress={onStart} style={accentBtn}>
+      <DemoBanner label="New here? Watch a worked example" onPress={onLearn} />
+      <Pressable onPress={onStart} style={[accentBtn, { marginTop: 12 }]}>
         <T s={16} w={700} c="#fff">
           Start round
         </T>

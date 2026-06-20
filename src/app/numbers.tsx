@@ -5,6 +5,7 @@ import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ArrowDown, ArrowRight, Play, Timer } from '@/components/Icon';
+import { DemoBanner } from '@/components/Tutorial';
 import { AppBar, Card, CountUp, SquareButton, T, useEntering } from '@/components/ui';
 import { LEVELS, LEVEL_ORDER, type NumbersLevel } from '@/data/content';
 import { DIGIT_MAP, pegByN } from '@/data/majorSystem';
@@ -94,7 +95,7 @@ export default function NumbersScreen() {
         />
       )}
       {phase === 'ready' && (
-        <Ready levelId={levelId} onPick={setLevelId} onStart={startRound} />
+        <Ready levelId={levelId} onPick={setLevelId} onStart={startRound} onLearn={() => router.push('/numbers-tutorial')} />
       )}
       {phase === 'memorize' && (
         <Memorize
@@ -352,7 +353,7 @@ function LessonQuiz({ pick, ok, onPick }: { pick: string | null; ok: boolean; on
 
 /* ----------------------------- READY ----------------------------- */
 
-function Ready({ levelId, onPick, onStart }: { levelId: NumbersLevel['id']; onPick: (id: NumbersLevel['id']) => void; onStart: () => void }) {
+function Ready({ levelId, onPick, onStart, onLearn }: { levelId: NumbersLevel['id']; onPick: (id: NumbersLevel['id']) => void; onStart: () => void; onLearn: () => void }) {
   return (
     <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 8, paddingBottom: 20 }}>
       <T s={24} w={800} ls={-0.5} style={{ marginBottom: 4 }}>
@@ -388,7 +389,8 @@ function Ready({ levelId, onPick, onStart }: { levelId: NumbersLevel['id']; onPi
         })}
       </View>
       <View style={{ flex: 1 }} />
-      <Pressable onPress={onStart} style={btnAccent}>
+      <DemoBanner label="New here? Watch a worked example" onPress={onLearn} />
+      <Pressable onPress={onStart} style={[btnAccent, { marginTop: 12 }]}>
         <T s={16} w={700} c="#fff">
           Start round
         </T>

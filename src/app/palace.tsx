@@ -144,7 +144,7 @@ function Brief({
           <Play size={13} color="#fff" />
         </View>
         <T s={13.5} w={600} c={colors.accentDeep} style={{ flex: 1 }}>
-          New to this? Watch a 30-second demo
+          New to this? Watch a worked example
         </T>
         <ArrowRight size={16} color={colors.accentDeep} strokeWidth={2} />
       </Pressable>
