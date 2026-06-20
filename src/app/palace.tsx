@@ -4,7 +4,7 @@ import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ArrowRight, Padlock } from '@/components/Icon';
+import { ArrowRight, Padlock, Play } from '@/components/Icon';
 import { AppBar, Card, CountUp, ProgressBar, SquareButton, T, useEntering } from '@/components/ui';
 import { MIN_PALACE_ROOMS, PALACE_WORDS } from '@/data/content';
 import { fmtTime } from '@/engine/digits';
@@ -40,6 +40,7 @@ export default function PalaceScreen() {
 
   const exit = () => router.back();
   const manage = () => router.push('/palaces');
+  const learn = () => router.push('/palace-tutorial');
   const editActive = () => router.push({ pathname: '/palace-edit', params: { id: active.id } });
 
   const start = () => {
@@ -81,7 +82,7 @@ export default function PalaceScreen() {
       <AppBar title="Memory Palace" subtitle={name} onClose={exit} />
 
       {phase === 'brief' && (
-        <Brief name={name} loci={loci} onStart={start} onManage={manage} onEdit={editActive} />
+        <Brief name={name} loci={loci} onStart={start} onManage={manage} onEdit={editActive} onLearn={learn} />
       )}
 
       {phase === 'memorize' && (
@@ -115,12 +116,14 @@ function Brief({
   onStart,
   onManage,
   onEdit,
+  onLearn,
 }: {
   name: string;
   loci: string[];
   onStart: () => void;
   onManage: () => void;
   onEdit: () => void;
+  onLearn: () => void;
 }) {
   const ready = loci.length >= MIN_PALACE_ROOMS;
   return (
@@ -128,11 +131,23 @@ function Brief({
       <T s={24} w={800} ls={-0.5} style={{ lineHeight: 28, marginBottom: 4 }}>
         Walk a place you know.
       </T>
-      <T s={13.5} c={colors.ink2} style={{ lineHeight: 20, marginBottom: 16 }}>
+      <T s={13.5} c={colors.ink2} style={{ lineHeight: 20, marginBottom: 12 }}>
         {ready
           ? `You'll stash ${loci.length} words at ${loci.length} fixed spots in ${name}. Make each one a wild little scene, then walk the route back and collect them in order.`
           : `${name} needs at least ${MIN_PALACE_ROOMS} rooms before you can walk it.`}
       </T>
+      <Pressable
+        onPress={onLearn}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.accentSoft, borderRadius: radii.md, paddingVertical: 11, paddingHorizontal: 13, marginBottom: 16 }}
+      >
+        <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' }}>
+          <Play size={13} color="#fff" />
+        </View>
+        <T s={13.5} w={600} c={colors.accentDeep} style={{ flex: 1 }}>
+          New to this? Watch a 30-second demo
+        </T>
+        <ArrowRight size={16} color={colors.accentDeep} strokeWidth={2} />
+      </Pressable>
 
       <Card style={{ flex: 1, paddingHorizontal: 16, paddingVertical: 6 }}>
         <ScrollView showsVerticalScrollIndicator={false}>

@@ -61,6 +61,7 @@ export default function RootLayout() {
           <Stack.Screen name="palace" options={{ animation: 'slide_from_bottom' }} />
           <Stack.Screen name="palaces" options={{ animation: 'slide_from_bottom' }} />
           <Stack.Screen name="palace-edit" options={{ animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="palace-tutorial" options={{ animation: 'slide_from_bottom' }} />
           <Stack.Screen name="images" options={{ animation: 'slide_from_bottom' }} />
           <Stack.Screen name="cards" options={{ animation: 'slide_from_bottom' }} />
           <Stack.Screen name="cards-system" options={{ animation: 'slide_from_bottom' }} />
