@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Alert, Pressable, ScrollView, Switch, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Switch, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppBar, Card, T } from '@/components/ui';
@@ -24,6 +24,8 @@ const PREF_ROWS: Row[] = [
 export default function SettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const name = useProgress((s) => s.name);
+  const setName = useProgress((s) => s.setName);
   const settings = useProgress((s) => s.settings);
   const setSetting = useProgress((s) => s.setSetting);
   const resetProgress = useProgress((s) => s.resetProgress);
@@ -70,7 +72,23 @@ export default function SettingsScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
       <AppBar title="Settings" onClose={() => router.back()} />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 28 }}>
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 28 }}>
+        <T s={11} w={700} ls={0.8} c={colors.ink3} style={{ marginBottom: 9 }}>
+          PROFILE
+        </T>
+        <Card style={{ borderRadius: radii.xl, marginBottom: 20, padding: 14 }}>
+          <T s={12} c={colors.ink3} style={{ marginBottom: 8 }}>
+            Your name (shown on Home)
+          </T>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="Athlete"
+            placeholderTextColor={colors.ink3}
+            style={{ borderWidth: 1.5, borderColor: colors.line, backgroundColor: colors.card2, borderRadius: radii.md, paddingVertical: 11, paddingHorizontal: 14, fontSize: 15, color: colors.ink }}
+          />
+        </Card>
+
         <T s={11} w={700} ls={0.8} c={colors.ink3} style={{ marginBottom: 9 }}>
           PREFERENCES
         </T>

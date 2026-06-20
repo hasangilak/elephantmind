@@ -8,7 +8,7 @@ import { Screen } from '@/components/layout';
 import { Card, Pill, ProgressBar, Ring, T, useEntering } from '@/components/ui';
 import { dueIds } from '@/engine/sr';
 import { levelForXp, rankForLevel, xpInto, xpPct, greetingFor, XP_PER_LEVEL } from '@/engine/leveling';
-import { pegsLearned, useProgress } from '@/state/store';
+import { pegsLearned, todayEpochDay, useProgress } from '@/state/store';
 import { useUI } from '@/state/ui';
 import { colors, radii } from '@/theme/tokens';
 
@@ -118,19 +118,25 @@ function TierCard({ tier, index }: { tier: Tier; index: number }) {
 
 export default function HomeScreen() {
   const router = useRouter();
+  const name = useProgress((s) => s.name);
   const xp = useProgress((s) => s.xp);
   const streak = useProgress((s) => s.streak);
   const srCards = useProgress((s) => s.srCards);
-  const srDay = useProgress((s) => s.srDay);
+  const palaceBest = useProgress((s) => s.palaceBest);
+  const imagesBest = useProgress((s) => s.imagesBest);
   const showToast = useUI((s) => s.showToast);
 
   const level = levelForXp(xp);
   const rank = rankForLevel(level);
   const pegs = pegsLearned(srCards);
-  const dueCount = dueIds(srCards, srDay).length;
+  const dueCount = dueIds(srCards, todayEpochDay()).length;
 
   const onLocked = () => showToast('Unlocks later — see Roadmap');
-  const tier2Pct = Math.min(72, 30 + srCards.filter((c) => c.stage >= 2).length * 4);
+  const clampPct = (v: number) => Math.max(0, Math.min(100, Math.round(v)));
+  // Real progress per tier (no hardcoded demo values).
+  const tier1Pct = clampPct((((palaceBest?.words ?? 0) / 12 + (imagesBest?.correct ?? 0) / 18) / 2) * 100);
+  const tier2Pct = clampPct((pegs / 100) * 100);
+  const tier3Pct = 0;
 
   const tiers: Tier[] = [
     {
@@ -138,7 +144,7 @@ export default function HomeScreen() {
       label: 'Foundations',
       sub: 'Memory Palace + Link method',
       status: 'In progress',
-      pct: 80,
+      pct: tier1Pct,
       modes: [
         {
           glyph: 'W',
@@ -196,7 +202,7 @@ export default function HomeScreen() {
       sub: 'Memory League-style timed speed rounds',
       status: 'Preview',
       statusMuted: true,
-      pct: 22,
+      pct: tier3Pct,
       modes: [
         { glyph: 'S', name: 'Speed rounds', meta: 'Levels vs. world-record pace', tag: 'BETA', onPress: () => router.push('/numbers') },
         { glyph: 'H', name: 'Head-to-head', meta: 'Live duels — on the roadmap', locked: true, onPress: onLocked },
@@ -213,7 +219,7 @@ export default function HomeScreen() {
             {greetingFor()}
           </T>
           <T s={25} w={800} ls={-0.6} style={{ marginTop: 2 }}>
-            Atlas
+            {name.trim() || 'Athlete'}
           </T>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>

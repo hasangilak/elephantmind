@@ -70,7 +70,7 @@ export default function RoadmapScreen() {
       </View>
 
       <T s={11.5} c={colors.ink3} style={{ textAlign: 'center', marginTop: 18, lineHeight: 17 }}>
-        These are scoped but not built in this prototype.{'\n'}The core loop — Numbers, Palace & Review — is fully playable.
+        Built so far: Numbers, Cards, Palace, Images & Review.{'\n'}The items above are planned next.
       </T>
     </Screen>
   );

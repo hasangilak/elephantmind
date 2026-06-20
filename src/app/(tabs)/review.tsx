@@ -8,16 +8,17 @@ import { Card, Pill, ProgressBar, T, useEntering } from '@/components/ui';
 import { pegByN } from '@/data/majorSystem';
 import { dueIds, SR_LABELS, stageCounts } from '@/engine/sr';
 import * as haptics from '@/lib/haptics';
-import { useProgress } from '@/state/store';
+import { todayEpochDay, useProgress } from '@/state/store';
 import { useUI } from '@/state/ui';
 import { colors, radii } from '@/theme/tokens';
 
+/** Max cards to review in one session (keeps the first session manageable). */
+const SESSION_CAP = 20;
+
 export default function ReviewScreen() {
   const srCards = useProgress((s) => s.srCards);
-  const srDay = useProgress((s) => s.srDay);
   const reviewSr = useProgress((s) => s.reviewSr);
   const finishReview = useProgress((s) => s.finishReview);
-  const advanceSrDay = useProgress((s) => s.advanceSrDay);
   const showToast = useUI((s) => s.showToast);
 
   const [started, setStarted] = useState(false);
@@ -28,15 +29,15 @@ export default function ReviewScreen() {
   const [got, setGot] = useState(0);
 
   const counts = stageCounts(srCards);
-  const due = dueIds(srCards, srDay);
+  const due = dueIds(srCards, todayEpochDay());
   const done = started && pos >= queue.length;
 
   const start = () => {
     if (!due.length) {
-      showToast('Nothing due — try advancing time');
+      showToast('All caught up — come back tomorrow');
       return;
     }
-    setQueue(due);
+    setQueue(due.slice(0, SESSION_CAP));
     setPos(0);
     setReveal(false);
     setReviewed(0);
@@ -57,12 +58,7 @@ export default function ReviewScreen() {
     if (newPos >= queue.length) finishReview(newGot);
   };
 
-  const advance = (days: number) => {
-    advanceSrDay(days);
-    setStarted(false);
-  };
-
-  const dayLabel = srDay === 0 ? 'Today' : `Day +${srDay}`;
+  const dayLabel = 'Today';
 
   return (
     <Screen>
@@ -79,14 +75,7 @@ export default function ReviewScreen() {
         }
       />
 
-      {!started && (
-        <Overview
-          counts={counts}
-          dueCount={due.length}
-          onStart={start}
-          onAdvance={advance}
-        />
-      )}
+      {!started && <Overview counts={counts} dueCount={due.length} onStart={start} />}
 
       {started && !done && (
         <ActiveCard
@@ -111,12 +100,10 @@ function Overview({
   counts,
   dueCount,
   onStart,
-  onAdvance,
 }: {
   counts: number[];
   dueCount: number;
   onStart: () => void;
-  onAdvance: (days: number) => void;
 }) {
   const maxTl = Math.max(1, counts[1], counts[2], counts[3], counts[4], counts[5]);
   return (
@@ -160,33 +147,13 @@ function Overview({
 
       <Pressable onPress={onStart} style={accentBtn}>
         <T s={16} w={700} c="#fff">
-          {dueCount ? `Review ${dueCount} due now` : 'Nothing due right now'}
+          {dueCount ? `Review ${Math.min(dueCount, SESSION_CAP)} now` : 'All caught up'}
         </T>
         <ArrowRight size={17} color="#fff" strokeWidth={2.2} />
       </Pressable>
 
-      <T s={11} w={700} ls={0.8} c={colors.ink3} style={{ marginTop: 20, marginBottom: 9 }}>
-        SIMULATE TIME PASSING
-      </T>
-      <View style={{ flexDirection: 'row', gap: 9 }}>
-        {[
-          { d: 1, label: '+1 day' },
-          { d: 7, label: '+1 week' },
-          { d: 30, label: '+1 month' },
-        ].map((b) => (
-          <Pressable
-            key={b.d}
-            onPress={() => onAdvance(b.d)}
-            style={{ flex: 1, height: 44, borderRadius: radii.md, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }}
-          >
-            <T mono s={13.5} w={700}>
-              {b.label}
-            </T>
-          </Pressable>
-        ))}
-      </View>
-      <T s={11.5} c={colors.ink3} style={{ textAlign: 'center', marginTop: 12, lineHeight: 17 }}>
-        Jump the clock to watch cards fall due exactly on their Rule-of-Five schedule.
+      <T s={11.5} c={colors.ink3} style={{ textAlign: 'center', marginTop: 16, lineHeight: 17 }}>
+        Cards return on their own schedule — now, tomorrow, next week, next month, then three months out.
       </T>
     </View>
   );

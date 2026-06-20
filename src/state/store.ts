@@ -5,29 +5,27 @@
  * deck, discipline bests and session history. Per-round flow state (the Numbers /
  * Palace phase machines and the active Review session) is local to each screen.
  *
- * Seed values mirror the Mnemos design's starting state so a fresh install looks
- * like the prototype; once played, everything updates and persists for real.
+ * A fresh install starts at zero: no XP, no streak, no bests, empty history, and
+ * the full 100 number-images seeded as "new" cards to learn via spaced repetition.
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { differenceInCalendarDays, format, getDay, startOfDay } from 'date-fns';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { PEGS_LEARNED_BASE, SEED_SR_CARDS } from '@/data/content';
+import { PEGS } from '@/data/majorSystem';
 import type { NumbersScore } from '@/engine/digits';
 import type { PalaceScore } from '@/engine/palace';
 import { reviewCard, srOffset, type SrCard } from '@/engine/sr';
 
-const DAY_MS = 86_400_000;
-
-function startOfDay(ts: number): number {
-  const d = new Date(ts);
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
-}
-
 /** Mon-first weekday index (0=Mon … 6=Sun) for the weekly-activity bars. */
 export function weekdayIndex(now: number = Date.now()): number {
-  return (new Date(now).getDay() + 6) % 7;
+  return (getDay(now) + 6) % 7;
+}
+
+/** Whole calendar-day index (local) since the epoch, for real-date scheduling. */
+export function todayEpochDay(now: number = Date.now()): number {
+  return differenceInCalendarDays(now, 0);
 }
 
 export interface RecentSession {
@@ -62,11 +60,12 @@ export interface Settings {
 
 export interface ProgressState {
   hydrated: boolean;
+  /** Display name shown on Home; editable in Settings, empty by default. */
+  name: string;
   xp: number;
   streak: number;
   lastPlayedISO: string | null;
   srCards: SrCard[];
-  srDay: number;
   numbersBest: NumbersBest | null;
   palaceBest: PalaceBest | null;
   imagesBest: ImagesBest | null;
@@ -87,34 +86,29 @@ export interface ProgressState {
   recordCards(correct: number, total: number, elapsedSec: number): void;
   reviewSr(n: string, gotIt: boolean): void;
   finishReview(gotCount: number): void;
-  advanceSrDay(days: number): void;
   setSetting<K extends keyof Settings>(key: K, value: Settings[K]): void;
+  setName(name: string): void;
   setCardWord(id: number, word: string): void;
   setCardCombo(n: number): void;
   resetProgress(): void;
 }
 
 function makeSeed() {
-  const now = Date.now();
   return {
-    xp: 1240,
-    streak: 6,
-    lastPlayedISO: new Date(startOfDay(now)).toISOString(),
-    srCards: SEED_SR_CARDS.map((c) => ({ ...c })),
-    srDay: 0,
-    numbersBest: { digits: 40, timeSec: 52 } as NumbersBest,
-    palaceBest: { words: 12, timeSec: 130 } as PalaceBest,
-    imagesBest: { correct: 18, timeSec: 100 } as ImagesBest,
+    name: '',
+    xp: 0,
+    streak: 0,
+    lastPlayedISO: null as string | null,
+    // The whole 00–99 system starts as "new" cards to master via spaced repetition.
+    srCards: PEGS.map((p) => ({ n: p.n, stage: 0, due: 0 })) as SrCard[],
+    numbersBest: null as NumbersBest | null,
+    palaceBest: null as PalaceBest | null,
+    imagesBest: null as ImagesBest | null,
     cardsBest: null as CardsBest | null,
     cardWords: {} as Record<string, string>,
     cardCombo: 3,
-    week: [3, 5, 2, 6, 4, 7, 5],
-    recent: [
-      { mode: 'Numbers', score: '34 / 40 digits', xp: 180, ts: now - 5 * 3600_000 },
-      { mode: 'Words · Palace', score: '11 / 12 words', xp: 132, ts: now - 6 * 3600_000 },
-      { mode: 'Review', score: '8 images', xp: 64, ts: now - 1 * DAY_MS },
-      { mode: 'Images', score: '18 / 30', xp: 150, ts: now - 2 * DAY_MS },
-    ] as RecentSession[],
+    week: [0, 0, 0, 0, 0, 0, 0],
+    recent: [] as RecentSession[],
     settings: { haptics: true, reminders: false, reduceMotion: false } as Settings,
   };
 }
@@ -122,12 +116,13 @@ function makeSeed() {
 /** Update streak from the last-played day; returns the new streak + ISO. */
 function bumpStreak(lastISO: string | null, streak: number, now: number) {
   const today = startOfDay(now);
+  const iso = today.toISOString();
   if (lastISO) {
-    const last = startOfDay(new Date(lastISO).getTime());
-    if (last === today) return { streak, iso: new Date(today).toISOString() };
-    if (last === today - DAY_MS) return { streak: streak + 1, iso: new Date(today).toISOString() };
+    const diff = differenceInCalendarDays(today, new Date(lastISO));
+    if (diff === 0) return { streak, iso };
+    if (diff === 1) return { streak: streak + 1, iso };
   }
-  return { streak: 1, iso: new Date(today).toISOString() };
+  return { streak: 1, iso };
 }
 
 function pushRecent(recent: RecentSession[], entry: RecentSession): RecentSession[] {
@@ -191,9 +186,10 @@ export const useProgress = create<ProgressState>()(
         }),
 
       reviewSr: (n, gotIt) =>
-        set((s) => ({
-          srCards: s.srCards.map((c) => (c.n === n ? reviewCard(c, s.srDay, gotIt) : c)),
-        })),
+        set((s) => {
+          const day = todayEpochDay();
+          return { srCards: s.srCards.map((c) => (c.n === n ? reviewCard(c, day, gotIt) : c)) };
+        }),
 
       finishReview: (gotCount) =>
         set((s) => {
@@ -268,21 +264,21 @@ export const useProgress = create<ProgressState>()(
           };
         }),
 
-      advanceSrDay: (days) => set((s) => ({ srDay: s.srDay + days })),
-
       setSetting: (key, value) => set((s) => ({ settings: { ...s.settings, [key]: value } })),
+
+      setName: (name) => set(() => ({ name })),
 
       setCardWord: (id, word) =>
         set((s) => ({ cardWords: { ...s.cardWords, [id]: word } })),
 
       setCardCombo: (n) => set(() => ({ cardCombo: n })),
 
-      // Reset progress but keep the user's settings and custom card system.
+      // Reset progress but keep the user's name, settings and custom card system.
       resetProgress: () =>
-        set((s) => ({ ...makeSeed(), settings: s.settings, cardWords: s.cardWords, cardCombo: s.cardCombo })),
+        set((s) => ({ ...makeSeed(), name: s.name, settings: s.settings, cardWords: s.cardWords, cardCombo: s.cardCombo })),
     }),
     {
-      name: 'mnemos-progress-v1',
+      name: 'mnemos-progress-v2',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: ({ hydrated, ...rest }) => rest,
       onRehydrateStorage: () => (state) => {
@@ -292,22 +288,15 @@ export const useProgress = create<ProgressState>()(
   ),
 );
 
-/** Pegs "learned" = SR cards at stage ≥ 1 plus the design's learned baseline. */
+/** Pegs "learned" = SR cards that have advanced past "new" (stage ≥ 1). */
 export function pegsLearned(srCards: SrCard[]): number {
-  return srCards.filter((c) => c.stage >= 1).length + PEGS_LEARNED_BASE;
+  return srCards.filter((c) => c.stage >= 1).length;
 }
 
 /** Human "when" label for a recent-session timestamp. */
 export function formatWhen(ts: number, now: number = Date.now()): string {
-  const diff = Math.floor((startOfDay(now) - startOfDay(ts)) / DAY_MS);
-  if (diff <= 0) {
-    const d = new Date(ts);
-    let h = d.getHours();
-    const m = d.getMinutes();
-    const ap = h >= 12 ? 'pm' : 'am';
-    h = h % 12 || 12;
-    return `Today · ${h}:${m < 10 ? '0' : ''}${m}${ap}`;
-  }
+  const diff = differenceInCalendarDays(now, ts);
+  if (diff <= 0) return `Today · ${format(ts, 'h:mmaaa')}`;
   if (diff === 1) return 'Yesterday';
   return `${diff} days ago`;
 }

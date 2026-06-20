@@ -1,8 +1,6 @@
 /**
- * Static game content ported from the Mnemos design (levels, palace, roadmap,
- * upgrade path, seed spaced-repetition deck).
+ * Static game content (levels, palace, roadmap, upgrade path).
  */
-import type { SrCard } from '@/engine/sr';
 
 export interface NumbersLevel {
   id: 'beginner' | 'intermediate' | 'advanced';
@@ -83,8 +81,8 @@ export interface RoadmapItem {
 export const ROADMAP_ITEMS: RoadmapItem[] = [
   {
     tag: 'DISCIPLINES',
-    title: 'Cards & Names',
-    body: 'Reuse your 52 number-images for a deck; add a face-name link layer for 30 portraits.',
+    title: 'Names & Faces',
+    body: 'A face-name link layer — recall the name under each reordered portrait.',
   },
   {
     tag: 'MULTIPLAYER',
@@ -121,27 +119,6 @@ export const UPGRADE_PATH: UpgradeStep[] = [
   { name: 'PAO', meta: 'Person–Action–Object · 3 digits/image', state: 'next' },
   { name: '2-card system', meta: 'pairs of cards as one image', state: 'locked' },
 ];
-
-/** Seed SR deck — the design's 14 starter cards with their stages/dues. */
-export const SEED_SR_CARDS: SrCard[] = [
-  { n: '07', stage: 1, due: 0 },
-  { n: '42', stage: 0, due: 0 },
-  { n: '13', stage: 2, due: 0 },
-  { n: '31', stage: 0, due: 0 },
-  { n: '86', stage: 0, due: 0 },
-  { n: '50', stage: 1, due: 0 },
-  { n: '09', stage: 0, due: 0 },
-  { n: '04', stage: 1, due: 0 },
-  { n: '99', stage: 3, due: 2 },
-  { n: '25', stage: 2, due: 6 },
-  { n: '33', stage: 2, due: 5 },
-  { n: '90', stage: 3, due: 20 },
-  { n: '74', stage: 4, due: 40 },
-  { n: '12', stage: 4, due: 85 },
-];
-
-/** Days already credited as learned, added to SR stage≥1 count (design: +24). */
-export const PEGS_LEARNED_BASE = 24;
 
 /** Distinct, vivid emoji used as the "images" in the Link/Story discipline. */
 export const IMAGE_POOL = [
