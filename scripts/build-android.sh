@@ -13,7 +13,21 @@ cd "$(dirname "$0")/.."
 VARIANT="${VARIANT:-release}"
 ARCH="${ARCH:-arm64-v8a}"
 export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
-export JAVA_HOME="${JAVA_HOME:-/Applications/Android Studio.app/Contents/jbr/Contents/Home}"
+
+# Force a Gradle-compatible JDK (17–21). The React Native gradle plugin breaks on
+# Java 25, so we must NOT inherit a too-new JAVA_HOME from the shell.
+JBR="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+if [ -x "$JBR/bin/java" ]; then
+  export JAVA_HOME="$JBR"
+elif J="$(/usr/libexec/java_home -v 21 2>/dev/null)"; then
+  export JAVA_HOME="$J"
+elif J="$(/usr/libexec/java_home -v 17 2>/dev/null)"; then
+  export JAVA_HOME="$J"
+else
+  echo "✖ Need a JDK 17–21 (e.g. install Android Studio). Found JAVA_HOME=$JAVA_HOME" >&2
+  exit 1
+fi
+echo "▶ Using JDK: $("$JAVA_HOME/bin/java" -version 2>&1 | head -1)"
 
 # release -> assembleRelease
 TASK="assemble$(printf '%s' "${VARIANT:0:1}" | tr '[:lower:]' '[:upper:]')${VARIANT:1}"
@@ -31,7 +45,11 @@ npx expo prebuild -p android --no-install >/dev/null
 sed -i '' 's#gradle-9\.[0-9.]*-bin\.zip#gradle-8.13-bin.zip#' android/gradle/wrapper/gradle-wrapper.properties
 
 echo "▶ gradle $TASK ($ARCH) — the first build takes a while…"
-( cd android && ./gradlew "$TASK" -PreactNativeArchitectures="$ARCH" --console=plain )
+(
+  cd android
+  ./gradlew --stop >/dev/null 2>&1 || true   # drop any stale daemon on the wrong JVM
+  ./gradlew "$TASK" -PreactNativeArchitectures="$ARCH" -Dorg.gradle.java.home="$JAVA_HOME" --console=plain
+)
 
 mkdir -p builds
 OUT="builds/mnemos-${VARIANT}-$(date +%Y%m%d-%H%M%S).apk"
