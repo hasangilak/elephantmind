@@ -10,16 +10,25 @@ It is solo and fully local: all progress (XP, streak, spaced-repetition deck,
 discipline bests, history) is stored on-device with AsyncStorage. No backend, no
 accounts.
 
+<p align="center">
+  <img src="docs/screenshots/home.jpg" alt="Mnemos home screen" width="300" />
+</p>
+
 ## Screens
 
 - **Path (Home)** — level/XP, a resume card, and a 3-tier progression of disciplines.
 - **Numbers** — a Major System lesson, then a timed memorize → keypad-recall →
   score round (beginner / intermediate / advanced).
+- **Cards** — Speed Cards: flip through a shuffled deck one card at a time (with a
+  PAO-style word per card), then reorganize the reshuffled deck back into order.
+  Includes an editable 52-card system and a 1–4 cards-per-story selector.
 - **Palace** — stash words at 12 rooms of a memory palace, then walk it back.
+- **Images** — Link/Story: memorize a sequence of images, then tap them back in order.
 - **Review** — Rule-of-Five spaced repetition over the 00–99 number-images, with a
   "simulate time" control to watch cards fall due.
 - **Stats** — level, streak, Major System mastery, weekly activity, bests, history.
 - **Roadmap** — the encoding upgrade path and planned features.
+- **Settings** — haptics, daily reminder, reduce-motion, reset progress.
 
 ## Get started
 
