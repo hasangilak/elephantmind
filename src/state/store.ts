@@ -13,6 +13,7 @@ import { differenceInCalendarDays, format, getDay, startOfDay } from 'date-fns';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { DEFAULT_PALACE } from '@/data/content';
 import { PEGS } from '@/data/majorSystem';
 import type { NumbersScore } from '@/engine/digits';
 import type { PalaceScore } from '@/engine/palace';
@@ -58,6 +59,17 @@ export interface Settings {
   reduceMotion: boolean;
 }
 
+/** A user-defined memory palace: an ordered list of loci (rooms). */
+export interface Palace {
+  id: string;
+  name: string;
+  loci: string[];
+}
+
+function newPalaceId(): string {
+  return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
 export interface ProgressState {
   hydrated: boolean;
   /** Display name shown on Home; editable in Settings, empty by default. */
@@ -78,6 +90,10 @@ export interface ProgressState {
   cardWords: Record<string, string>;
   /** Preferred cards-per-story grouping (1–4). */
   cardCombo: number;
+  /** User-defined memory palaces. */
+  palaces: Palace[];
+  /** Currently selected palace id. */
+  activePalaceId: string;
 
   // actions
   recordNumbers(score: NumbersScore, elapsedSec: number): void;
@@ -90,6 +106,10 @@ export interface ProgressState {
   setName(name: string): void;
   setCardWord(id: number, word: string): void;
   setCardCombo(n: number): void;
+  addPalace(name: string): string;
+  updatePalace(id: string, patch: Partial<Pick<Palace, 'name' | 'loci'>>): void;
+  deletePalace(id: string): void;
+  setActivePalace(id: string): void;
   resetProgress(): void;
 }
 
@@ -107,6 +127,8 @@ function makeSeed() {
     cardsBest: null as CardsBest | null,
     cardWords: {} as Record<string, string>,
     cardCombo: 3,
+    palaces: [{ id: 'default', name: DEFAULT_PALACE.name, loci: [...DEFAULT_PALACE.loci] }] as Palace[],
+    activePalaceId: 'default',
     week: [0, 0, 0, 0, 0, 0, 0],
     recent: [] as RecentSession[],
     settings: { haptics: true, reminders: false, reduceMotion: false } as Settings,
@@ -273,9 +295,36 @@ export const useProgress = create<ProgressState>()(
 
       setCardCombo: (n) => set(() => ({ cardCombo: n })),
 
-      // Reset progress but keep the user's name, settings and custom card system.
+      addPalace: (name) => {
+        const id = newPalaceId();
+        set((s) => ({ palaces: [...s.palaces, { id, name: name.trim() || 'New palace', loci: [] }], activePalaceId: id }));
+        return id;
+      },
+
+      updatePalace: (id, patch) =>
+        set((s) => ({ palaces: s.palaces.map((p) => (p.id === id ? { ...p, ...patch } : p)) })),
+
+      deletePalace: (id) =>
+        set((s) => {
+          if (s.palaces.length <= 1) return {} as Partial<ProgressState>; // always keep one
+          const palaces = s.palaces.filter((p) => p.id !== id);
+          const activePalaceId = s.activePalaceId === id ? palaces[0].id : s.activePalaceId;
+          return { palaces, activePalaceId };
+        }),
+
+      setActivePalace: (id) => set(() => ({ activePalaceId: id })),
+
+      // Reset progress but keep the user's name, settings, card system and palaces.
       resetProgress: () =>
-        set((s) => ({ ...makeSeed(), name: s.name, settings: s.settings, cardWords: s.cardWords, cardCombo: s.cardCombo })),
+        set((s) => ({
+          ...makeSeed(),
+          name: s.name,
+          settings: s.settings,
+          cardWords: s.cardWords,
+          cardCombo: s.cardCombo,
+          palaces: s.palaces,
+          activePalaceId: s.activePalaceId,
+        })),
     }),
     {
       name: 'elephantam-progress-v1',

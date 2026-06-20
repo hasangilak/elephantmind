@@ -6,8 +6,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ArrowRight, Padlock } from '@/components/Icon';
 import { AppBar, Card, CountUp, ProgressBar, SquareButton, T, useEntering } from '@/components/ui';
-import { PALACE } from '@/data/content';
+import { MIN_PALACE_ROOMS, PALACE_WORDS } from '@/data/content';
 import { fmtTime } from '@/engine/digits';
+import { shuffle } from '@/engine/images';
 import { scorePalace, wordMatches, type PalaceScore } from '@/engine/palace';
 import * as haptics from '@/lib/haptics';
 import { useProgress } from '@/state/store';
@@ -15,24 +16,37 @@ import { useUI } from '@/state/ui';
 import { colors, radii } from '@/theme/tokens';
 
 type Phase = 'brief' | 'memorize' | 'recallintro' | 'recall' | 'score';
-const { loci, words, name } = PALACE;
 
 export default function PalaceScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const recordPalace = useProgress((s) => s.recordPalace);
+  const palaces = useProgress((s) => s.palaces);
+  const activePalaceId = useProgress((s) => s.activePalaceId);
   const showToast = useUI((s) => s.showToast);
+
+  const active = palaces.find((p) => p.id === activePalaceId) ?? palaces[0];
+  const loci = active.loci.map((l) => l.trim()).filter(Boolean);
+  const name = active.name;
 
   const [phase, setPhase] = useState<Phase>('brief');
   const [index, setIndex] = useState(0);
   const [links, setLinks] = useState<Record<number, string>>({});
   const [recall, setRecall] = useState<Record<number, string>>({});
+  const [words, setWords] = useState<string[]>([]);
   const [elapsed, setElapsed] = useState(0);
   const [score, setScore] = useState<PalaceScore | null>(null);
   const startTs = useRef(0);
 
   const exit = () => router.back();
+  const manage = () => router.push('/palaces');
+  const editActive = () => router.push({ pathname: '/palace-edit', params: { id: active.id } });
+
   const start = () => {
+    if (loci.length < MIN_PALACE_ROOMS) return;
+    setWords(shuffle(PALACE_WORDS).slice(0, loci.length));
+    setLinks({});
+    setRecall({});
     setIndex(0);
     startTs.current = Date.now();
     setPhase('memorize');
@@ -47,7 +61,7 @@ export default function PalaceScreen() {
     }
   };
   const submit = () => {
-    const sc = scorePalace([...words], recall);
+    const sc = scorePalace(words, recall);
     recordPalace(sc, elapsed);
     setScore(sc);
     setPhase('score');
@@ -66,10 +80,14 @@ export default function PalaceScreen() {
     <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
       <AppBar title="Memory Palace" subtitle={name} onClose={exit} />
 
-      {phase === 'brief' && <Brief onStart={start} />}
+      {phase === 'brief' && (
+        <Brief name={name} loci={loci} onStart={start} onManage={manage} onEdit={editActive} />
+      )}
 
       {phase === 'memorize' && (
         <Walk
+          loci={loci}
+          words={words}
           index={index}
           link={links[index] ?? ''}
           onSetLink={(v) => setLinks((m) => ({ ...m, [index]: v }))}
@@ -78,67 +96,94 @@ export default function PalaceScreen() {
         />
       )}
 
-      {phase === 'recallintro' && (
-        <RecallIntro elapsed={elapsed} onStart={() => setPhase('recall')} />
-      )}
+      {phase === 'recallintro' && <RecallIntro elapsed={elapsed} onStart={() => setPhase('recall')} />}
 
       {phase === 'recall' && (
-        <Recall
-          recall={recall}
-          onInput={(i, v) => setRecall((m) => ({ ...m, [i]: v }))}
-          onSubmit={submit}
-        />
+        <Recall loci={loci} recall={recall} onInput={(i, v) => setRecall((m) => ({ ...m, [i]: v }))} onSubmit={submit} />
       )}
 
       {phase === 'score' && score && (
-        <ScoreView score={score} recall={recall} onAgain={restart} onExit={exit} />
+        <ScoreView loci={loci} words={words} score={score} recall={recall} onAgain={restart} onExit={exit} />
       )}
     </View>
   );
 }
 
-function Brief({ onStart }: { onStart: () => void }) {
+function Brief({
+  name,
+  loci,
+  onStart,
+  onManage,
+  onEdit,
+}: {
+  name: string;
+  loci: string[];
+  onStart: () => void;
+  onManage: () => void;
+  onEdit: () => void;
+}) {
+  const ready = loci.length >= MIN_PALACE_ROOMS;
   return (
     <View style={{ flex: 1, paddingHorizontal: 20, paddingBottom: 20 }}>
       <T s={24} w={800} ls={-0.5} style={{ lineHeight: 28, marginBottom: 4 }}>
         Walk a place you know.
       </T>
       <T s={13.5} c={colors.ink2} style={{ lineHeight: 20, marginBottom: 16 }}>
-        You'll stash {words.length} words at {words.length} fixed spots in your apartment. Make each one a wild little scene. Then walk the route back and collect them in order.
+        {ready
+          ? `You'll stash ${loci.length} words at ${loci.length} fixed spots in ${name}. Make each one a wild little scene, then walk the route back and collect them in order.`
+          : `${name} needs at least ${MIN_PALACE_ROOMS} rooms before you can walk it.`}
       </T>
+
       <Card style={{ flex: 1, paddingHorizontal: 16, paddingVertical: 6 }}>
         <ScrollView showsVerticalScrollIndicator={false}>
-          {loci.map((l, i) => (
-            <View key={l} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 9, borderBottomWidth: i < loci.length - 1 ? 1 : 0, borderBottomColor: colors.line }}>
-              <View style={{ width: 24, height: 24, borderRadius: 7, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' }}>
-                <T mono w={700} s={11} c={colors.accentDeep}>
-                  {i + 1}
+          {loci.length === 0 ? (
+            <T s={13.5} c={colors.ink3} style={{ textAlign: 'center', paddingVertical: 28 }}>
+              No rooms yet — add some to build your route.
+            </T>
+          ) : (
+            loci.map((l, i) => (
+              <View key={`${l}-${i}`} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 9, borderBottomWidth: i < loci.length - 1 ? 1 : 0, borderBottomColor: colors.line }}>
+                <View style={{ width: 24, height: 24, borderRadius: 7, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' }}>
+                  <T mono w={700} s={11} c={colors.accentDeep}>
+                    {i + 1}
+                  </T>
+                </View>
+                <T s={14.5} w={600}>
+                  {l}
                 </T>
               </View>
-              <T s={14.5} w={600}>
-                {l}
-              </T>
-            </View>
-          ))}
+            ))
+          )}
         </ScrollView>
       </Card>
-      <Pressable onPress={onStart} style={[accentBtn, { marginTop: 16 }]}>
-        <T s={16} w={700} c="#fff">
-          Begin the walk
+
+      <Pressable onPress={onManage} style={{ paddingVertical: 14 }}>
+        <T s={13} w={600} c={colors.ink2} style={{ textAlign: 'center' }}>
+          Switch or edit palaces
         </T>
-        <ArrowRight size={17} color="#fff" strokeWidth={2.2} />
+      </Pressable>
+
+      <Pressable onPress={ready ? onStart : onEdit} style={accentBtn}>
+        <T s={16} w={700} c="#fff">
+          {ready ? 'Begin the walk' : 'Add rooms'}
+        </T>
+        {ready && <ArrowRight size={17} color="#fff" strokeWidth={2.2} />}
       </Pressable>
     </View>
   );
 }
 
 function Walk({
+  loci,
+  words,
   index,
   link,
   onSetLink,
   onBack,
   onNext,
 }: {
+  loci: string[];
+  words: string[];
   index: number;
   link: string;
   onSetLink: (v: string) => void;
@@ -224,10 +269,12 @@ function RecallIntro({ elapsed, onStart }: { elapsed: number; onStart: () => voi
 }
 
 function Recall({
+  loci,
   recall,
   onInput,
   onSubmit,
 }: {
+  loci: string[];
   recall: Record<number, string>;
   onInput: (i: number, v: string) => void;
   onSubmit: () => void;
@@ -239,7 +286,7 @@ function Recall({
       </T>
       <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 9 }}>
         {loci.map((loc, i) => (
-          <View key={loc} style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
+          <View key={`${loc}-${i}`} style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
             <View style={{ width: 26, height: 26, borderRadius: 8, backgroundColor: colors.card2, alignItems: 'center', justifyContent: 'center' }}>
               <T mono w={700} s={11} c={colors.ink2}>
                 {i + 1}
@@ -270,11 +317,15 @@ function Recall({
 }
 
 function ScoreView({
+  loci,
+  words,
   score,
   recall,
   onAgain,
   onExit,
 }: {
+  loci: string[];
+  words: string[];
   score: PalaceScore;
   recall: Record<number, string>;
   onAgain: () => void;
@@ -302,7 +353,7 @@ function ScoreView({
           const ok = wordMatches(recall[i] ?? '', words[i]);
           const typed = (recall[i] ?? '').trim();
           return (
-            <View key={loc} style={{ flexDirection: 'row', alignItems: 'center', gap: 11, paddingVertical: 9, paddingHorizontal: 12, borderRadius: radii.md, borderWidth: 1.5, borderColor: ok ? colors.accent : colors.err }}>
+            <View key={`${loc}-${i}`} style={{ flexDirection: 'row', alignItems: 'center', gap: 11, paddingVertical: 9, paddingHorizontal: 12, borderRadius: radii.md, borderWidth: 1.5, borderColor: ok ? colors.accent : colors.err }}>
               <View style={{ width: 22, height: 22, borderRadius: 7, backgroundColor: colors.card2, alignItems: 'center', justifyContent: 'center' }}>
                 <T mono w={700} s={10} c={colors.ink3}>
                   {i + 1}

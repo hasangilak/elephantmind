@@ -40,7 +40,8 @@ export const LEVELS: Record<NumbersLevel['id'], NumbersLevel> = {
 
 export const LEVEL_ORDER: NumbersLevel['id'][] = ['beginner', 'intermediate', 'advanced'];
 
-export const PALACE = {
+/** The palace seeded for a new user. Users can edit it and add their own. */
+export const DEFAULT_PALACE = {
   name: 'Your Apartment',
   loci: [
     'Front door',
@@ -56,21 +57,19 @@ export const PALACE = {
     'Bookshelf',
     'Bedroom door',
   ],
-  words: [
-    'Anchor',
-    'Cactus',
-    'Velvet',
-    'Thunder',
-    'Pickle',
-    'Harbor',
-    'Marble',
-    'Falcon',
-    'Lantern',
-    'Compass',
-    'Walnut',
-    'Cobweb',
-  ],
-} as const;
+};
+
+/** Random nouns stashed in the palace each round (one per room). */
+export const PALACE_WORDS = [
+  'Anchor', 'Cactus', 'Velvet', 'Thunder', 'Pickle', 'Harbor', 'Marble', 'Falcon',
+  'Lantern', 'Compass', 'Walnut', 'Cobweb', 'Saddle', 'Iceberg', 'Trumpet', 'Goblin',
+  'Pebble', 'Cauldron', 'Feather', 'Magnet', 'Bonfire', 'Acorn', 'Domino', 'Whisker',
+  'Glacier', 'Barrel', 'Jigsaw', 'Meteor', 'Ribbon', 'Igloo', 'Plankton', 'Gargoyle',
+  'Turnip', 'Lasagna', 'Periscope', 'Hammock',
+];
+
+/** Minimum rooms a palace needs before it can be played. */
+export const MIN_PALACE_ROOMS = 3;
 
 export interface RoadmapItem {
   tag: string;
