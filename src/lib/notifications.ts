@@ -1,36 +1,57 @@
 /**
  * Local notification helpers for the daily training reminder.
- * Local-only (no push). No-ops gracefully on web or when permission is denied.
+ *
+ * IMPORTANT: expo-notifications throws on load in Expo Go (SDK 53+) and isn't
+ * available on web, so it is NEVER statically imported here — it's lazily
+ * `require`d only inside a real/dev build. In Expo Go / web these are no-ops.
  */
-import * as Notifications from 'expo-notifications';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
+import type * as ExpoNotifications from 'expo-notifications';
 
 const REMINDER_HOUR = 19; // 7pm local
 const REMINDER_MINUTE = 0;
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
+const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+/** Scheduled local reminders require a real/dev build (not Expo Go or web). */
+export const remindersAvailable = Platform.OS !== 'web' && !isExpoGo;
+
+let handlerSet = false;
+
+/** Lazy-load expo-notifications so it never executes in Expo Go / web. */
+function load(): typeof ExpoNotifications {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const N: typeof ExpoNotifications = require('expo-notifications');
+  if (!handlerSet) {
+    N.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+      }),
+    });
+    handlerSet = true;
+  }
+  return N;
+}
 
 /** Schedule (or reschedule) the daily reminder. Returns true if scheduled. */
 export async function enableReminders(): Promise<boolean> {
-  if (Platform.OS === 'web') return false;
+  if (!remindersAvailable) return false;
   try {
-    const { status } = await Notifications.requestPermissionsAsync();
+    const N = load();
+    const { status } = await N.requestPermissionsAsync();
     if (status !== 'granted') return false;
-    await Notifications.cancelAllScheduledNotificationsAsync();
-    await Notifications.scheduleNotificationAsync({
+    await N.cancelAllScheduledNotificationsAsync();
+    await N.scheduleNotificationAsync({
       content: {
         title: 'Time to train your memory',
         body: 'A few number-images are waiting — keep your streak alive.',
       },
       trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        type: N.SchedulableTriggerInputTypes.DAILY,
         hour: REMINDER_HOUR,
         minute: REMINDER_MINUTE,
       },
@@ -42,9 +63,10 @@ export async function enableReminders(): Promise<boolean> {
 }
 
 export async function disableReminders(): Promise<void> {
-  if (Platform.OS === 'web') return;
+  if (!remindersAvailable) return;
   try {
-    await Notifications.cancelAllScheduledNotificationsAsync();
+    const N = load();
+    await N.cancelAllScheduledNotificationsAsync();
   } catch {
     // ignore
   }

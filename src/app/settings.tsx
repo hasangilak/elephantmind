@@ -4,7 +4,7 @@ import { Alert, Pressable, ScrollView, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppBar, Card, T } from '@/components/ui';
-import { disableReminders, enableReminders } from '@/lib/notifications';
+import { disableReminders, enableReminders, remindersAvailable } from '@/lib/notifications';
 import { useProgress, type Settings } from '@/state/store';
 import { useUI } from '@/state/ui';
 import { colors, radii } from '@/theme/tokens';
@@ -33,6 +33,11 @@ export default function SettingsScreen() {
     setSetting(key, value);
     if (key === 'reminders') {
       if (value) {
+        if (!remindersAvailable) {
+          setSetting('reminders', false);
+          showToast('Reminders need a dev build (not Expo Go)');
+          return;
+        }
         const ok = await enableReminders();
         if (!ok) {
           setSetting('reminders', false);
