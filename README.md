@@ -14,6 +14,21 @@ accounts.
   <img src="docs/screenshots/home.jpg" alt="Elephantam home screen" width="300" />
 </p>
 
+## Features
+
+- **Five disciplines, one loop.** Every round is the same shape — *memorize → recall → score* — tuned per discipline:
+  - **Numbers** (the Major System) with a built-in lesson: the digit→consonant code, "vowels are free," worked peg examples, and a quick check before you play.
+  - **Cards** (Speed Cards): flip a shuffled deck one card at a time, then rebuild the reshuffled deck back into the exact order you memorized.
+  - **Palace** (Method of Loci): place words around a 12-room palace, then walk it back.
+  - **Images** (Link/Story): chain a sequence of images and tap them back in order.
+  - **Review** (spaced repetition): drill the full 00–99 number-images on a Rule-of-Five schedule.
+- **Build your own encoding systems.** Edit the word/image for any of the 52 cards (PAO-style) and choose how many cards form one "scene" (1–4). The full 100-image Major System table ships built in.
+- **Real spaced repetition.** Cards fall due on real calendar days (now → +1 day → +1 week → +1 month → +3 months), with new / due / mastered counts and *x*/100 mastery tracking.
+- **Progression & habit-building.** XP and levels with ranks (Novice → Grandmaster), a 3-tier skill path, day streaks, a weekly-activity chart, per-discipline bests, recent-session history, and an optional daily reminder.
+- **Benchmark feedback.** Rounds are graded against real memory-sport benchmarks (e.g. "at this pace you'd place: *Intermediate*"), plus accuracy, time, and longest-correct-run.
+- **Feel & accessibility.** Haptics, score count-up animations, a reduce-motion switch, an editable display name, and a warm-paper / ink theme (Schibsted Grotesk + Space Mono).
+- **Solo & fully offline.** All progress lives on-device (AsyncStorage) — no account, no backend, no network. Runs on iOS, Android, and the web.
+
 ## Screens
 
 - **Path (Home)** — level/XP, a resume card, and a 3-tier progression of disciplines.
@@ -53,6 +68,13 @@ npx expo start        # press w for web, or scan the QR with Expo Go
 
 A fresh install starts empty — level 1, no streak, all 100 number-images "new" —
 and builds real progress as you play.
+
+**Standalone APK (no account):** build an installable release APK entirely on your
+machine — no EAS, no login, no cloud:
+
+```bash
+npm run build:android      # → builds/elephantam-release-<timestamp>.apk  (gitignored)
+```
 
 ## Project layout
 
